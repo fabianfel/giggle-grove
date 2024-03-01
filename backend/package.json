@@ -1,9 +1,14 @@
 {
-  "name": "giggle-grove",
-  "version": "1.0.0",
-  "main": "app.js",
-  "license": "MIT",
-  "dependencies": {
-    "fastify": "^4.26.1"
-  }
+    "name": "giggle-grove",
+    "version": "1.0.0",
+    "main": "server.js",
+    "license": "MIT",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "@fastify/websocket": "^9.0.0",
+        "fastify": "^4.26.1"
+    }
 }
