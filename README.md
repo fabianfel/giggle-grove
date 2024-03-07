@@ -5,6 +5,7 @@ Chatprogramm für verteilte Systeme
 # Installation
 
 - cd backend && yarn install
+- pip install websocket-client
 
 # Start
 
