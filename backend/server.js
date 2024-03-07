@@ -12,9 +12,11 @@ active_groups.set("Test", {
 });
 
 server.register(async function (server) {
+  server.get("/groups", async (request, reply) => {
+    return Array.from(active_groups.keys());
+  });
   server.get("/", { websocket: true }, (connection) => {
     // Client has been connected. Send active groups to client.
-    connection.socket.send(JSON.stringify(Array.from(active_groups.keys())));
 
     connection.socket.on("message", (request) => {
       //Pars stringified JSON
