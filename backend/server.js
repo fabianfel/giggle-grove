@@ -6,9 +6,8 @@ server.register(FastifyWebSocket);
 
 const active_groups = new Map();
 active_groups.set("Test", {
-  users: ["testUser"],
   messages: [{ user: "testUser", msg: "Hello World" }],
-  connections: [],
+  connections: new Map(),
 });
 
 server.register(async function (server) {
@@ -29,25 +28,25 @@ server.register(async function (server) {
       switch (requestJson.operation) {
         case "CREATE_OR_JOIN_GROUP":
           if (!active_groups.has(groupname)) {
+            const connectionMap = new Map();
+            connectionMap.set(connection, user);
+
             active_groups.set(groupname, {
-              users: [user],
               messages: [],
-              connections: [connection],
+              connections: connectionMap,
             });
             response = {
               operation: "GROUP_CREATED",
             };
           } else {
             const group = active_groups.get(groupname);
-            if (group.users.includes(user)) {
+            if (Array.from(group.connections.values()).includes(user)) {
               console.log("User: " + user + " is already in group");
               response = {
                 operation: "NAME_ALREADY_TAKEN_FOR_GROUP",
               };
             } else {
-              group.users.push(user);
-              group.connections.push(connection);
-
+              group.connections.set(connection, user);
               response = {
                 operation: "GROUP_JOINED",
               };
@@ -66,7 +65,7 @@ server.register(async function (server) {
 
           group.messages.push(new_msg);
 
-          for (const conn of group.connections) {
+          for (const conn of group.connections.keys()) {
             conn.socket.send(
               JSON.stringify({
                 operation: "NEW_MESSAGE",
@@ -75,6 +74,13 @@ server.register(async function (server) {
             );
           }
           break;
+      }
+    });
+
+    connection.socket.on("close", () => {
+      console.log("Client has been disconnected");
+      for (const group of active_groups.values()) {
+        group.connections.delete(connection);
       }
     });
   });
