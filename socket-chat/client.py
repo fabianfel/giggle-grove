@@ -65,7 +65,7 @@ ws.send(
 
 response = json.loads(ws.recv())
 
-if response["operation"] == "GROUP_JOINED":
+if response["operation"] == "GROUP_JOINED" or response["operation"] == "GROUP_CREATED":
     print(f"{BOLD}{YELLOW}INFO>{RESET} Connected to host. Start sending messages.")
     print(helpMsg)
     print(f"{PURPLE}Joined {YELLOW}{groupname}{PURPLE} group as {YELLOW}{user}{RESET}")
