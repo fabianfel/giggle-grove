@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatprogramm</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        display: grid;
+        grid-template-columns: 20% 60% 20%;
+        justify-content: space-between;
+        height: calc(100vh - 40px);
+        padding: 20px 0 20px 0;
+        margin: 0;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        background-color: #fff;
+      }
+      .message {
+        background-color: #d3e9fa;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .user-message {
+        background-color: #e2f7cb;
+        text-align: right;
+      }
+      .message-input {
+        border: 1px solid #ccc;
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .send-button {
+        padding: 10px;
+        background-color: #4caf50;
+        border: none;
+        border-radius: 5px;
+        width: 100%;
+        color: #fff;
+        cursor: pointer;
+      }
+      .user-group-form {
+        justify-self: center;
+        grid-template-rows: 10% 10% 5%;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        display: grid;
+        width: 80%;
+      }
+      .user-group-form-input {
+        margin-bottom: 10px;
+        border-radius: 5px;
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      .message-input-form {
+        display: grid;
+        grid-template-columns: 80% 15%;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1>Chatprogramm</h1>
+      <h4>
+        User:
+        <span id="joined-user"></span>
+      </h4>
+      <h4>
+        Gruppe:
+        <span id="joined-gruppe"></span>
+      </h4>
+    </div>
+    <div class="container">
+      <div id="chat-name" class="message user-message"></div>
+      <div id="chat-messages"></div>
+      <div class="message-input-form">
+        <input
+          type="text"
+          id="message-input"
+          class="message-input"
+          placeholder="Nachricht eingeben..."
+        />
+        <button onclick="sendMessage()" class="send-button">Senden</button>
+      </div>
+    </div>
+
+    <div class="user-group-form">
+      <input
+        type="text"
+        id="user-input"
+        class="user-group-form-input"
+        placeholder="Benutzername eingeben..."
+      />
+      <input
+        type="text"
+        id="group-input"
+        class="user-group-form-input"
+        placeholder="Gruppenname eingeben..."
+      />
+      <button onclick="login()" class="send-button">Login</button>
+    </div>
+
+    <script>
+      var websocket = new WebSocket("ws://localhost:5000"); // Setzen Sie die WebSocket-Adresse entsprechend Ihrer Serverkonfiguration
+
+      var user = "";
+      var groupname = "";
+
+      websocket.onmessage = function (event) {
+        var message = JSON.parse(event.data);
+        console.log(message);
+
+        switch (message.operation) {
+          case "NEW_MESSAGE":
+            appendMessage(message.payload.user, message.payload.msg);
+            break;
+          case "GROUP_JOINED":
+            document.getElementById("joined-user").innerHTML = user;
+            document.getElementById("joined-gruppe").innerHTML = groupname;
+            break;
+        }
+      };
+
+      function login() {
+        var userInput = document.getElementById("user-input").value.trim();
+        var groupInput = document.getElementById("group-input").value.trim();
+
+        if (userInput === "" || groupInput === "") {
+          alert("Bitte füllen Sie alle Felder aus.");
+          return;
+        }
+
+        user = userInput;
+        groupname = groupInput;
+
+        var message = {
+          operation: "CREATE_OR_JOIN_GROUP",
+          payload: {
+            user: user,
+            groupname: groupname,
+          },
+        };
+
+        websocket.send(JSON.stringify(message));
+      }
+
+      function sendMessage() {
+        var messageInput = document
+          .getElementById("message-input")
+          .value.trim();
+
+        if (user === "" || groupname === "" || messageInput === "") {
+          alert("Bitte füllen Sie alle Felder aus.");
+          return;
+        }
+
+        var message = {
+          operation: "SEND_MESSAGE",
+          payload: {
+            user: user,
+            groupname: groupname,
+            msg: messageInput,
+          },
+        };
+
+        websocket.send(JSON.stringify(message));
+      }
+
+      function appendMessage(sender, text) {
+        var chatMessages = document.getElementById("chat-messages");
+        var newMessage = document.createElement("div");
+        newMessage.classList.add("message");
+        if (sender === user) {
+          newMessage.classList.add("user-message");
+        }
+        newMessage.textContent = sender + ": " + text;
+        chatMessages.appendChild(newMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    </script>
+  </body>
+</html>

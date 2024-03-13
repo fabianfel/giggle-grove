@@ -1,2 +1,4 @@
 # Node Modules
 **/node_modules
+.local_db
+./backend/server.js
