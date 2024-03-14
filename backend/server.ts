@@ -5,13 +5,13 @@ import Fastify, { FastifyInstance } from "fastify";
 import { SocketStream } from "@fastify/websocket";
 
 import { ConstantBackoff, handleAll, retry } from "cockatiel";
-import { Etcd3 } from "etcd3";
+import { Etcd3, GRPCUnavailableError } from "etcd3";
 
 class Database {
-  private dbClient: Etcd3 | Map<string, string>;
+  private myClient: Etcd3 | Map<string, string>;
   public constructor(_: { hostList: string[] }) {
     console.log("Trying to connect to etcd");
-    this.dbClient = new Etcd3({
+    this.myClient = new Etcd3({
       hosts: hostList,
       faultHandling: {
         global: retry(handleAll, {
@@ -27,25 +27,29 @@ class Database {
       value: (value: string) => {
         return {
           exec: () => {
-            if (this.dbClient instanceof Map) {
-              this.dbClient.set(key, value);
+            if (this.myClient instanceof Map) {
+              this.myClient.set(key, value);
               return Promise.resolve(true);
             }
 
-            this.dbClient
+            this.myClient
               .put(key)
               .value(value)
               .exec()
               .then(
-                () => true,
-                () => false
-              )
-              .catch(() => {
-                console.log("Error while trying to put value to etcd");
-                console.log("Trying to put value to Map");
-                this.dbClient = new Map();
-                this.dbClient.set(key, value);
-              });
+                (value) => true,
+                (rej) => {
+                  if (rej instanceof GRPCUnavailableError) {
+                    console.log("Error while trying to put value to etcd");
+                    console.log("Trying to put value to Map");
+                    this.myClient = new Map();
+                    this.myClient.set(key, value);
+                    return true;
+                  }
+                  console.log(rej);
+                  return false;
+                }
+              );
           },
         };
       },
@@ -55,26 +59,29 @@ class Database {
   public get(key: string) {
     return {
       json: () => {
-        if (this.dbClient instanceof Map) {
-          const data = this.dbClient.get(key);
+        if (this.myClient instanceof Map) {
+          const data = this.myClient.get(key);
           return data
             ? Promise.resolve(JSON.parse(data))
             : Promise.resolve(null);
         }
 
-        return this.dbClient
+        return this.myClient
           .get(key)
           .json()
           .then(
             (value) => (value ? value : null),
-            () => undefined
-          )
-          .catch(() => {
-            console.log("Error while trying to put value to etcd");
-            console.log("Trying to put value to Map");
-            this.dbClient = new Map();
-            return null;
-          });
+            (rej) => {
+              if (rej instanceof GRPCUnavailableError) {
+                console.log("Error while trying to get value from etcd");
+                console.log("Trying to get value from Map");
+                this.myClient = new Map();
+                return this.myClient.get(key);
+              }
+              console.log(rej);
+              return null;
+            }
+          );
       },
     };
   }
@@ -82,20 +89,26 @@ class Database {
   public getAll() {
     return {
       keys: () => {
-        if (this.dbClient instanceof Map) {
-          return Promise.resolve(Array.from(this.dbClient.keys()));
+        if (this.myClient instanceof Map) {
+          return Promise.resolve(Array.from(this.myClient.keys()));
         }
 
-        return this.dbClient
+        return this.myClient
           .getAll()
           .keys()
-          .then()
-          .catch(() => {
-            console.log("Error while trying to get all keys from etcd");
-            console.log("Trying to get all keys from Map");
-            this.dbClient = new Map();
-            return Promise.resolve(Array.from(this.dbClient.keys()));
-          });
+          .then(
+            (keys) => keys,
+            (rej) => {
+              if (rej instanceof GRPCUnavailableError) {
+                console.log("Error while trying to get all keys from etcd");
+                console.log("Trying to get all keys from Map");
+                this.myClient = new Map();
+                return Promise.resolve(Array.from(this.myClient.keys()));
+              }
+              console.log(rej);
+              return [];
+            }
+          );
       },
     };
   }
@@ -104,43 +117,49 @@ class Database {
     key?: string
   ): Promise<boolean> | { all: () => Promise<boolean> } {
     if (key != undefined && key != null && key != "") {
-      if (this.dbClient instanceof Map) {
-        return Promise.resolve(this.dbClient.delete(key));
+      if (this.myClient instanceof Map) {
+        return Promise.resolve(this.myClient.delete(key));
       }
-      return this.dbClient
+      return this.myClient
         .delete()
         .key(key)
         .then(
-          () => true,
-          () => false
-        )
-        .catch(() => {
-          console.log("Error while trying to delete key from etcd");
-          console.log("Trying to delete key from Map");
-          this.dbClient = new Map();
-          return this.dbClient.delete(key);
-        });
+          (value) => Number(value.deleted) > 0,
+          (rej) => {
+            if (rej instanceof GRPCUnavailableError) {
+              console.log("Error while trying to delete key from etcd");
+              console.log("Trying to delete key from Map");
+              this.myClient = new Map();
+              return this.myClient.delete(key);
+            }
+            console.log(rej);
+            return false;
+          }
+        );
     }
     return {
       all: () => {
-        if (this.dbClient instanceof Map) {
-          this.dbClient.clear();
+        if (this.myClient instanceof Map) {
+          this.myClient.clear();
           return Promise.resolve(true);
         }
-        return this.dbClient
+        return this.myClient
           .delete()
           .all()
           .exec()
           .then(
-            () => true,
-            () => false
-          )
-          .catch(() => {
-            console.log("Error while trying to delete all keys from etcd");
-            console.log("Trying to delete all keys from Map");
-            this.dbClient = new Map();
-            return true;
-          });
+            (value) => Number(value.deleted) > 0,
+            (rej) => {
+              if (rej instanceof GRPCUnavailableError) {
+                console.log("Error while trying to delete all keys from etcd");
+                console.log("Trying to delete all keys from Map");
+                this.myClient = new Map();
+                return true;
+              }
+              console.log(rej);
+              return false;
+            }
+          );
       },
     };
   }
@@ -203,6 +222,7 @@ server.register(async function (server: FastifyInstance) {
       switch (requestJson.operation) {
         case "CREATE_OR_JOIN_GROUP":
           group = (await dbClient.get(groupname).json()) as Group;
+
           if (!group) {
             group = {
               messages: [],
