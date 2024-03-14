@@ -9,6 +9,7 @@ import { Etcd3, GRPCUnavailableError } from "etcd3";
 
 class Database {
   private myClient: Etcd3 | Map<string, string>;
+
   public constructor(_: { hostList: string[] }) {
     console.log("Trying to connect to etcd");
     this.myClient = new Etcd3({
@@ -20,6 +21,12 @@ class Database {
         }),
       },
     });
+  }
+
+  private initMap(): Map<string, string> {
+    console.log("Error while trying to put value to etcd");
+    console.log("Trying to put value to Map");
+    return new Map();
   }
 
   public put(key: string) {
@@ -40,9 +47,7 @@ class Database {
                 (value) => true,
                 (rej) => {
                   if (rej instanceof GRPCUnavailableError) {
-                    console.log("Error while trying to put value to etcd");
-                    console.log("Trying to put value to Map");
-                    this.myClient = new Map();
+                    this.myClient = this.initMap();
                     this.myClient.set(key, value);
                     return true;
                   }
@@ -73,9 +78,7 @@ class Database {
             (value) => (value ? value : null),
             (rej) => {
               if (rej instanceof GRPCUnavailableError) {
-                console.log("Error while trying to get value from etcd");
-                console.log("Trying to get value from Map");
-                this.myClient = new Map();
+                this.myClient = this.initMap();
                 return this.myClient.get(key);
               }
               console.log(rej);
@@ -100,9 +103,7 @@ class Database {
             (keys) => keys,
             (rej) => {
               if (rej instanceof GRPCUnavailableError) {
-                console.log("Error while trying to get all keys from etcd");
-                console.log("Trying to get all keys from Map");
-                this.myClient = new Map();
+                this.myClient = this.initMap();
                 return Promise.resolve(Array.from(this.myClient.keys()));
               }
               console.log(rej);
@@ -127,9 +128,7 @@ class Database {
           (value) => Number(value.deleted) > 0,
           (rej) => {
             if (rej instanceof GRPCUnavailableError) {
-              console.log("Error while trying to delete key from etcd");
-              console.log("Trying to delete key from Map");
-              this.myClient = new Map();
+              this.myClient = this.initMap();
               return this.myClient.delete(key);
             }
             console.log(rej);
@@ -151,9 +150,7 @@ class Database {
             (value) => Number(value.deleted) > 0,
             (rej) => {
               if (rej instanceof GRPCUnavailableError) {
-                console.log("Error while trying to delete all keys from etcd");
-                console.log("Trying to delete all keys from Map");
-                this.myClient = new Map();
+                this.myClient = this.initMap();
                 return true;
               }
               console.log(rej);
