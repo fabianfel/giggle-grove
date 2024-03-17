@@ -5,8 +5,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "rm -f server.js && yarn compile && node server.js",
-    "compile": "tsc --target es2022 --moduleResolution node server.ts"
+    "start": "rm -f server.js && yarn compile:frontend && yarn compile:backend && node server.js",
+    "compile:backend": "tsc --target es2022 --moduleResolution node server.ts",
+    "compile:frontend": "yarn --cwd ../frontend build",
+    "start:backend": "rm -f server.js && yarn compile:backend && node server.js"
   },
   "dependencies": {
     "@fastify/static": "^7.0.1",

@@ -8,11 +8,12 @@ import { ConstantBackoff, handleAll, retry } from "cockatiel";
 import { Etcd3, GRPCUnavailableError } from "etcd3";
 
 class Database {
-  private myClient: Etcd3 | Map<string, string>;
+  private usedClient: Etcd3 | Map<string, string>;
+  private dbClient: Etcd3;
 
-  public constructor(_: { hostList: string[] }) {
+  public constructor(options: { hostList: string[] }) {
     console.log("Trying to connect to etcd");
-    this.myClient = new Etcd3({
+    this.dbClient = new Etcd3({
       hosts: hostList,
       faultHandling: {
         global: retry(handleAll, {
@@ -21,11 +22,26 @@ class Database {
         }),
       },
     });
+    this.usedClient = this.dbClient;
   }
+
+  private reconnectTimer: NodeJS.Timeout;
 
   private initMap(): Map<string, string> {
     console.log("Error while trying to put value to etcd");
     console.log("Trying to put value to Map");
+    this.reconnectTimer = setTimeout(async () => {
+      this.dbClient
+        .getAll()
+        .keys()
+        .then(() => (this.usedClient = this.dbClient))
+        .catch(() => {
+          console.log(
+            "Retry to connect to etcd failed. Trying again in 5 seconds."
+          );
+          this.reconnectTimer.refresh();
+        });
+    }, 5000);
     return new Map();
   }
 
@@ -34,12 +50,12 @@ class Database {
       value: (value: string) => {
         return {
           exec: () => {
-            if (this.myClient instanceof Map) {
-              this.myClient.set(key, value);
+            if (this.usedClient instanceof Map) {
+              this.usedClient.set(key, value);
               return Promise.resolve(true);
             }
 
-            this.myClient
+            this.usedClient
               .put(key)
               .value(value)
               .exec()
@@ -47,8 +63,8 @@ class Database {
                 (value) => true,
                 (rej) => {
                   if (rej instanceof GRPCUnavailableError) {
-                    this.myClient = this.initMap();
-                    this.myClient.set(key, value);
+                    this.usedClient = this.initMap();
+                    this.usedClient.set(key, value);
                     return true;
                   }
                   console.log(rej);
@@ -64,22 +80,22 @@ class Database {
   public get(key: string) {
     return {
       json: () => {
-        if (this.myClient instanceof Map) {
-          const data = this.myClient.get(key);
+        if (this.usedClient instanceof Map) {
+          const data = this.usedClient.get(key);
           return data
             ? Promise.resolve(JSON.parse(data))
             : Promise.resolve(null);
         }
 
-        return this.myClient
+        return this.usedClient
           .get(key)
           .json()
           .then(
             (value) => (value ? value : null),
             (rej) => {
               if (rej instanceof GRPCUnavailableError) {
-                this.myClient = this.initMap();
-                return this.myClient.get(key);
+                this.usedClient = this.initMap();
+                return this.usedClient.get(key);
               }
               console.log(rej);
               return null;
@@ -92,19 +108,19 @@ class Database {
   public getAll() {
     return {
       keys: () => {
-        if (this.myClient instanceof Map) {
-          return Promise.resolve(Array.from(this.myClient.keys()));
+        if (this.usedClient instanceof Map) {
+          return Promise.resolve(Array.from(this.usedClient.keys()));
         }
 
-        return this.myClient
+        return this.usedClient
           .getAll()
           .keys()
           .then(
             (keys) => keys,
             (rej) => {
               if (rej instanceof GRPCUnavailableError) {
-                this.myClient = this.initMap();
-                return Promise.resolve(Array.from(this.myClient.keys()));
+                this.usedClient = this.initMap();
+                return Promise.resolve(Array.from(this.usedClient.keys()));
               }
               console.log(rej);
               return [];
@@ -118,18 +134,18 @@ class Database {
     key?: string
   ): Promise<boolean> | { all: () => Promise<boolean> } {
     if (key != undefined && key != null && key != "") {
-      if (this.myClient instanceof Map) {
-        return Promise.resolve(this.myClient.delete(key));
+      if (this.usedClient instanceof Map) {
+        return Promise.resolve(this.usedClient.delete(key));
       }
-      return this.myClient
+      return this.usedClient
         .delete()
         .key(key)
         .then(
           (value) => Number(value.deleted) > 0,
           (rej) => {
             if (rej instanceof GRPCUnavailableError) {
-              this.myClient = this.initMap();
-              return this.myClient.delete(key);
+              this.usedClient = this.initMap();
+              return this.usedClient.delete(key);
             }
             console.log(rej);
             return false;
@@ -138,11 +154,11 @@ class Database {
     }
     return {
       all: () => {
-        if (this.myClient instanceof Map) {
-          this.myClient.clear();
+        if (this.usedClient instanceof Map) {
+          this.usedClient.clear();
           return Promise.resolve(true);
         }
-        return this.myClient
+        return this.usedClient
           .delete()
           .all()
           .exec()
@@ -150,7 +166,7 @@ class Database {
             (value) => Number(value.deleted) > 0,
             (rej) => {
               if (rej instanceof GRPCUnavailableError) {
-                this.myClient = this.initMap();
+                this.usedClient = this.initMap();
                 return true;
               }
               console.log(rej);
@@ -186,14 +202,17 @@ const server: FastifyInstance = Fastify({ logger: true });
 server.register(FastifyWebSocket);
 
 server.register(FastifyStatic, {
-  root: "/home/fabian/workspaces/node_projects/giggle-grove/backend",
+  root: process.cwd(),
 });
 
 const connections: Map<string, SocketStream> = new Map();
 
 server.register(async function (server: FastifyInstance) {
+  server.get("/chat/plain", async (_request, _reply) => {
+    return _reply.sendFile("./public/plain_index.html");
+  });
   server.get("/chat", async (_request, _reply) => {
-    return _reply.sendFile("index.html");
+    return _reply.sendFile("./public/index.html");
   });
 
   server.get("/groups", async (_request, _reply) => {
@@ -208,8 +227,8 @@ server.register(async function (server: FastifyInstance) {
     // Client has been connected. Send active groups to client.
 
     connection.socket.on("message", async (request) => {
-      //Parse stringified JSON
       const requestJson: Message = JSON.parse(request.toString());
+
       const groupname = requestJson.payload!.groupname;
       const user = requestJson.payload!.user;
 
