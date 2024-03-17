@@ -1,0 +1,78 @@
+services:
+  phoenix:
+    image: quay.io/coreos/etcd:v3.5.0
+    hostname: phoenix
+    command:
+      - etcd
+      - --name=phoenix
+      - --data-dir=data.etcd
+      - --advertise-client-urls=http://phoenix:2379
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --initial-advertise-peer-urls=http://phoenix:2380
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-cluster=phoenix=http://phoenix:2380,elephant=http://elephant:2380,eagle=http://eagle:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=etcd-cluster-1
+    volumes:
+      - ./.local_db/phoenix:/data.etcd
+    ports:
+      - "2309:2379"
+      - "2300:2380"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+
+  elephant:
+    image: quay.io/coreos/etcd:v3.5.0
+    hostname: elephant
+    command:
+      - etcd
+      - --name=elephant
+      - --data-dir=data.etcd
+      - --advertise-client-urls=http://elephant:2379
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --initial-advertise-peer-urls=http://elephant:2380
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-cluster=phoenix=http://phoenix:2380,elephant=http://elephant:2380,eagle=http://eagle:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=etcd-cluster-1
+    volumes:
+      - ./.local_db/elephant:/data.etcd
+    ports:
+      - "2319:2379"
+      - "2310:2380"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+
+  eagle:
+    image: quay.io/coreos/etcd:v3.5.0
+    hostname: eagle
+    command:
+      - etcd
+      - --name=eagle
+      - --data-dir=data.etcd
+      - --advertise-client-urls=http://eagle:2379
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --initial-advertise-peer-urls=http://eagle:2380
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-cluster=phoenix=http://phoenix:2380,elephant=http://elephant:2380,eagle=http://eagle:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=etcd-cluster-1
+    volumes:
+      - ./.local_db/eagle:/data.etcd
+    ports:
+      - "2329:2379"
+      - "2320:2380"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always

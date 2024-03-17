@@ -1,14 +1,24 @@
 {
-    "name": "giggle-grove",
-    "version": "1.0.0",
-    "main": "server.js",
-    "license": "MIT",
-    "type": "module",
-    "scripts": {
-        "start": "node server.js"
-    },
-    "dependencies": {
-        "@fastify/websocket": "^9.0.0",
-        "fastify": "^4.26.1"
-    }
+  "name": "giggle-grove",
+  "version": "1.0.0",
+  "main": "server.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "rm -f server.js && yarn compile:frontend && yarn compile:backend && node server.js",
+    "compile:backend": "tsc --target es2022 --moduleResolution node server.ts",
+    "compile:frontend": "yarn --cwd ../frontend build",
+    "start:backend": "rm -f server.js && yarn compile:backend && node server.js"
+  },
+  "dependencies": {
+    "@fastify/static": "^7.0.1",
+    "@fastify/websocket": "^9.0.0",
+    "cockatiel": "^3.1.2",
+    "etcd3": "^1.1.2",
+    "fastify": "^4.26.1"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.4.2"
+  }
 }

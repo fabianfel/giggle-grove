@@ -1,0 +1,54 @@
+<div class="content">
+  <div>
+    <h1>Chatprogramm</h1>
+    <h4>
+      User:
+      <span id="joined-user"></span>
+    </h4>
+    <h4>
+      Gruppe:
+      <span id="joined-gruppe"></span>
+    </h4>
+  </div>
+  <div class="container">
+    <div id="chat-name" class="message user-message"></div>
+    <div id="chat-messages">
+      <span *ngFor="let msg of messages">
+        <div *ngIf="msg.sender == user" class="message user-message">
+          {{ msg.sender }}: {{ msg.msg }}
+        </div>
+        <div *ngIf="msg.sender != user" class="message">
+          {{ msg.sender }}: {{ msg.msg }}
+        </div>
+      </span>
+    </div>
+    <div class="message-input-form">
+      <input
+        type="text"
+        id="message-input"
+        class="message-input"
+        placeholder="Nachricht eingeben..."
+        [(ngModel)]="message"
+      />
+      <button (click)="sendMessage()" class="send-button">Senden</button>
+    </div>
+  </div>
+
+  <div class="user-group-form">
+    <input
+      type="text"
+      id="user-input"
+      class="user-group-form-input"
+      placeholder="Benutzername eingeben..."
+      [(ngModel)]="user"
+    />
+    <input
+      type="text"
+      id="group-input"
+      class="user-group-form-input"
+      placeholder="Gruppenname eingeben..."
+      [(ngModel)]="groupname"
+    />
+    <button (click)="login()" class="send-button">Login</button>
+  </div>
+</div>
