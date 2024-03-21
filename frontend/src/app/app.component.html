@@ -35,20 +35,15 @@
   </div>
 
   <div class="user-group-form">
-    <input
-      type="text"
-      id="user-input"
-      class="user-group-form-input"
-      placeholder="Benutzername eingeben..."
-      [(ngModel)]="user"
-    />
-    <input
-      type="text"
-      id="group-input"
-      class="user-group-form-input"
-      placeholder="Gruppenname eingeben..."
-      [(ngModel)]="groupname"
-    />
+    <mat-form-field>
+      <mat-label>Benutzername</mat-label>
+      <input matInput type="text" [(ngModel)]="user" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Gruppenname</mat-label>
+      <input matInput type="text" [(ngModel)]="groupname" />
+    </mat-form-field>
     <button (click)="login()" class="send-button">Login</button>
   </div>
 </div>

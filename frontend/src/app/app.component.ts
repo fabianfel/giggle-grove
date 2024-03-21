@@ -1,19 +1,26 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
-
 @Component({
   selector: 'app-component',
   templateUrl: './app.component.html',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [
+    FormsModule,
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+  ],
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   title: string = 'Hello, Angular!';
-
+  value = 'Clear me';
   websocket: WebSocketSubject<{
     operation: string;
     payload: { groupname: string; user: string; msg?: string };

@@ -30,15 +30,7 @@
   padding: 10px;
   border-radius: 5px;
 }
-.send-button {
-  padding: 10px;
-  background-color: #4caf50;
-  border: none;
-  border-radius: 5px;
-  width: 100%;
-  color: #fff;
-  cursor: pointer;
-}
+
 .user-group-form {
   justify-self: center;
   grid-template-rows: 10% 10% 5%;

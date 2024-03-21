@@ -5,10 +5,12 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "rm -f server.js && yarn compile:frontend && yarn compile:backend && node server.js",
-    "compile:backend": "tsc --target es2022 --moduleResolution node server.ts",
-    "compile:frontend": "yarn --cwd ../frontend build",
-    "start:backend": "rm -f server.js && yarn compile:backend && node server.js"
+    "start": "rm -f server.js && yarn build && node server.js",
+    "start:backend": "rm -f server.js && yarn build:backend && node server.js",
+    "build:backend": "tsc --target es2022 --moduleResolution node server.ts",
+    "build:frontend": "yarn --cwd ../frontend build",
+    "build": "yarn build:frontend && yarn build:backend",
+    "minify": "modclean -n default:safe,default:caution -r && node-prune && minify-all"
   },
   "dependencies": {
     "@fastify/static": "^7.0.1",
@@ -19,6 +21,9 @@
   },
   "devDependencies": {
     "@types/ws": "^8.5.10",
+    "minify-all": "^1.2.2",
+    "modclean": "^3.0.0-beta.1",
+    "node-prune": "^1.0.2",
     "typescript": "^5.4.2"
   }
 }
