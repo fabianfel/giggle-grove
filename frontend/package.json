@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --aot --output-hashing none && gulp && cp -f dist/giggle-grove-frontend/browser/index.html ../backend/public/",
+    "build": "ng build --aot --output-hashing none && gulp",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
