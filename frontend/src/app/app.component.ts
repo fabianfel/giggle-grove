@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
+import { config } from '../environments/environment';
 @Component({
   selector: 'app-component',
   templateUrl: './app.component.html',
@@ -21,10 +22,11 @@ import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 export class AppComponent {
   title: string = 'Hello, Angular!';
   value = 'Clear me';
+
   websocket: WebSocketSubject<{
     operation: string;
     payload: { groupname: string; user: string; msg?: string };
-  }> = webSocket('ws://localhost:5000'); // Setzen Sie die WebSocket-Adresse entsprechend Ihrer Serverkonfiguration
+  }> = webSocket(config.websocketUrl); // Setzen Sie die WebSocket-Adresse entsprechend Ihrer Serverkonfiguration
 
   user: string = '';
   groupname: string = '';

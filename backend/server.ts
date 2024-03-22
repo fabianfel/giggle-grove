@@ -5,6 +5,7 @@ import Fastify, { FastifyInstance } from "fastify";
 import { SocketStream } from "@fastify/websocket";
 
 import { ConstantBackoff, handleAll, retry } from "cockatiel";
+import { config as loadEnv } from "dotenv";
 import { Etcd3, GRPCUnavailableError } from "etcd3";
 
 class Database {
@@ -14,7 +15,7 @@ class Database {
   public constructor(options: { hostList: string[] }) {
     console.log("Trying to connect to etcd");
     this.dbClient = new Etcd3({
-      hosts: hostList,
+      hosts: options.hostList,
       faultHandling: {
         global: retry(handleAll, {
           backoff: new ConstantBackoff(1000),
@@ -188,31 +189,24 @@ interface Message {
   payload?: { groupname: string; user: string; msg: string };
 }
 
-const hostList: string[] = [
-  "http://localhost:2309",
-  "http://localhost:2319",
-  "http://localhost:2329",
-];
+loadEnv();
 
 const dbClient = new Database({
-  hostList: hostList,
+  hostList: process.env.DB_HOSTLIST!.split(","),
 });
 
 const server: FastifyInstance = Fastify({ logger: true });
 server.register(FastifyWebSocket);
 
 server.register(FastifyStatic, {
-  root: process.cwd(),
+  root: process.cwd() + "/public",
 });
 
 const connections: Map<string, SocketStream> = new Map();
 
 server.register(async function (server: FastifyInstance) {
-  server.get("/chat/plain", async (_request, _reply) => {
-    return _reply.sendFile("./public/plain_index.html");
-  });
-  server.get("/chat", async (_request, _reply) => {
-    return _reply.sendFile("./public/index.html");
+  server.get("/", async (_request, _reply) => {
+    return _reply.sendFile("./index.html");
   });
 
   server.get("/groups", async (_request, _reply) => {
@@ -223,7 +217,7 @@ server.register(async function (server: FastifyInstance) {
     return (dbClient.delete() as any).all();
   });
 
-  server.get("/", { websocket: true }, (connection: SocketStream) => {
+  server.get("/socket", { websocket: true }, (connection: SocketStream) => {
     // Client has been connected. Send active groups to client.
 
     connection.socket.on("message", async (request) => {
@@ -336,7 +330,9 @@ server.register(async function (server: FastifyInstance) {
   });
 });
 
-server.listen({ port: 5000 }, (err) => {
+const { BACKEND_HOST, BACKEND_PORT } = process.env;
+
+server.listen({ host: BACKEND_HOST, port: Number(BACKEND_PORT) }, (err) => {
   if (err) {
     server.log.error(err);
     process.exit(1);
