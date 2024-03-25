@@ -10,7 +10,7 @@ COPY /frontend/yarn.lock          /frontend/yarn.lock
 
 WORKDIR /frontend
 RUN yarn install
-RUN yarn build
+RUN yarn build:production
 
 
 FROM node as backend
