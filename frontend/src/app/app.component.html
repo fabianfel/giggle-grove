@@ -1,14 +1,18 @@
 <div class="content">
-  <mat-card>
-    <h1>Chatprogramm</h1>
-    <h4>
-      User:
-      <span id="joined-user"></span>
-    </h4>
-    <h4>
-      Gruppe:
-      <span id="joined-gruppe"></span>
-    </h4>
+  <mat-card class="chat-program-card">
+    <mat-card-title class="chat-program-title">Chatprogramm</mat-card-title>
+    <mat-card-content>
+      <div class="user-group-container">
+        <div class="user-group">
+          <span>User:</span>
+          <span id="joined-user"></span>
+        </div>
+        <div class="user-group">
+          <span>Gruppe:</span>
+          <span id="joined-gruppe"></span>
+        </div>
+      </div>
+    </mat-card-content>
   </mat-card>
   <div class="container">
     <div id="chat-name" class="message user-message"></div>
@@ -32,7 +36,7 @@
       />
       <button
         mat-flat-button
-        style="margin-top: 2%"
+        style="margin-top: 2%; width: 30%"
         color="primary"
         (click)="sendMessage()"
         class="send-button"

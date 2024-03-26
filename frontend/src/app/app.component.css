@@ -8,6 +8,55 @@
   margin: 0;
   min-height: calc(100vh - 240px);
 }
+.chat-program-card {
+  margin-bottom: 20px;
+  background-color: #fff; /* Hintergrundfarbe */
+  border-radius: 4px; /* Abrundung der Ecken */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Schatten */
+}
+
+.chat-program-title {
+  font-size: 24px; /* Titelgröße */
+  color: #1976d2 !important; /* Blaue Farbe wie der Angular-Button "primary" */
+  font-weight: bold; /* Fettgeschrieben */
+  text-align: center; /* Zentrieren des Textes */
+  margin: 0; /* Entfernen von Standardabständen */
+  padding: 16px; /* Innenabstand */
+}
+
+.user-group {
+  background-color: #cbe2ff; /* Hintergrundfarbe wie der Primary-Button, aber blasser */
+  border-radius: 4px; /* Abrundung der Ecken */
+  padding: 8px 16px; /* Innenabstand */
+  margin-bottom: 8px; /* Abstand zwischen den Elementen */
+  word-wrap: break-word; /* Zeilenumbruch bei Bedarf */
+  max-width: 300px; /* Maximale Breite */
+  width: calc(
+    100% - 32px
+  ); /* Breite der Box abzüglich des linken und rechten Padding */
+}
+
+.user-group span {
+  font-weight: bold; /* Fettschrift */
+  color: #333; /* Textfarbe */
+  margin-right: 8px; /* Rechter Abstand */
+}
+
+.user-group-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chat-program-card mat-card-title {
+  font-size: 24px; /* Titelgröße */
+  color: #333; /* Textfarbe */
+}
+
+.chat-program-card mat-card-content {
+  padding: 16px; /* Innenabstand */
+}
+
 .container {
   display: flex;
   flex-direction: column;
