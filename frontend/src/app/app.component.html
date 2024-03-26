@@ -18,10 +18,16 @@
     <mat-card id="chat-messages" class="messages">
       <span *ngFor="let msg of messages">
         <div *ngIf="msg.sender == user" class="message user-message">
-          {{ msg.sender }}: {{ msg.msg }}
+          <div class="username-message" id="username-message">
+            {{ msg.sender }}
+          </div>
+          {{ msg.msg }}
         </div>
         <div *ngIf="msg.sender != user" class="message non-user-message">
-          {{ msg.sender }}: {{ msg.msg }}
+          <div class="username-message" id="username-message">
+            {{ msg.sender }}
+          </div>
+          {{ msg.msg }}
         </div>
       </span>
     </mat-card>
