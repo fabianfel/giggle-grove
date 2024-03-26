@@ -5,11 +5,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start:all": "rm -f server.js && yarn build && node server.js",
+    "start:all": "rm -f server.js && yarn build:all && node server.js",
     "start": "rm -f server.js && yarn build && node server.js",
     "build": "tsc --target es2022 --moduleResolution node server.ts",
     "build:frontend": "yarn --cwd ../frontend build && cp -Rf ../frontend/dist/browser ./public",
-    "build:all": "yarn build:frontend && yarn build:backend",
+    "build:all": "yarn build:frontend && yarn build",
     "minify": "modclean -n default:safe,default:caution -r && node-prune"
   },
   "dependencies": {
@@ -18,7 +18,8 @@
     "cockatiel": "^3.1.2",
     "dotenv": "^16.4.5",
     "etcd3": "^1.1.2",
-    "fastify": "^4.26.1"
+    "fastify": "^4.26.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/ws": "^8.5.10",
