@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +14,7 @@ import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 import { config } from '../environments/environment';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { AfterViewInit } from '@angular/core';
 
 @Component({
   selector: 'app-component',
@@ -24,7 +31,7 @@ import { MatCardModule } from '@angular/material/card';
   ],
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   title: string = 'Hello, Angular!';
   value = 'Clear me';
 
@@ -38,12 +45,33 @@ export class AppComponent {
   message: string = '';
   messages: { sender: string; msg: string; groupname: string }[] = [];
 
-  constructor() {
+  constructor(private elementRef: ElementRef) {
     // subject.subscribe(
     //   (msg) => console.log('message received: ' + msg), // Called whenever there is a message from the server.
     //   (err) => console.log(err), // Called if at any point WebSocket API signals some kind of error.
     //   () => console.log('complete') // Called when connection is closed (for whatever reason).
     // );
+  }
+
+  @ViewChild('scrollframe', { static: false }) scrollFrame!: ElementRef;
+  @ViewChildren('msg') msgElements!: QueryList<any>;
+
+  private shouldScrollToBottom: boolean = true;
+
+  ngAfterViewInit() {
+    this.msgElements.changes.subscribe((_) => {
+      if (this.shouldScrollToBottom) {
+        this.scrollToBottom();
+      }
+    });
+  }
+
+  private scrollToBottom(): void {
+    this.scrollFrame.nativeElement.scroll({
+      top: this.scrollFrame.nativeElement.scrollHeight,
+      left: 0,
+      behavior: 'smooth',
+    });
   }
 
   ngOnInit() {

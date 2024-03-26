@@ -16,20 +16,22 @@
   </mat-card>
   <div class="container">
     <mat-card id="chat-messages" class="messages">
-      <span *ngFor="let msg of messages">
-        <div *ngIf="msg.sender == user" class="message user-message">
-          <div class="username-message" id="username-message">
-            {{ msg.sender }}
+      <div class="frame" #scrollframe>
+        <div *ngFor="let msg of messages" class="msg" #msg>
+          <div *ngIf="msg.sender == user" class="message user-message">
+            <div class="username-message" id="username-message">
+              {{ msg.sender }}
+            </div>
+            {{ msg.msg }}
           </div>
-          {{ msg.msg }}
-        </div>
-        <div *ngIf="msg.sender != user" class="message non-user-message">
-          <div class="username-message" id="username-message">
-            {{ msg.sender }}
+          <div *ngIf="msg.sender != user" class="message non-user-message">
+            <div class="username-message" id="username-message">
+              {{ msg.sender }}
+            </div>
+            {{ msg.msg }}
           </div>
-          {{ msg.msg }}
         </div>
-      </span>
+      </div>
     </mat-card>
     <mat-card class="message-input-form">
       <input

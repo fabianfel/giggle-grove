@@ -73,10 +73,15 @@
   min-width: fit-content;
 }
 
+.frame {
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+}
+
 .messages {
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
   height: 50vh;
   padding: 2%;
 }
