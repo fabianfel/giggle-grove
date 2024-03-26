@@ -6,6 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 import { config } from '../environments/environment';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+
 @Component({
   selector: 'app-component',
   templateUrl: './app.component.html',
@@ -16,6 +19,8 @@ import { config } from '../environments/environment';
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
+    MatButtonModule,
+    MatCardModule,
   ],
   styleUrls: ['./app.component.css'],
 })

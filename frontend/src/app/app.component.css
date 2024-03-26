@@ -1,27 +1,24 @@
 .content {
   font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
   display: grid;
   grid-template-columns: 20% 60% 20%;
   justify-content: space-between;
   height: calc(100vh - 40px);
   padding: 20px 0 20px 0;
   margin: 0;
+  min-height: calc(100vh - 240px);
 }
 .container {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  background-color: #fff;
 }
 .message {
-  background-color: #d3e9fa;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
 }
 .user-message {
-  background-color: #e2f7cb;
   text-align: right;
 }
 .message-input {
@@ -35,7 +32,6 @@
   justify-self: center;
   grid-template-rows: 10% 10% 5%;
   margin: auto;
-  background-color: #fff;
   padding: 20px;
   display: grid;
   width: 80%;
@@ -47,7 +43,28 @@
   border: 1px solid #ccc;
 }
 .message-input-form {
-  display: grid;
-  grid-template-columns: 80% 15%;
-  justify-content: space-between;
+  display: flex;
+  align-items: center;
+  padding: 1%;
+  width: 100%;
+  z-index: 9999;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: auto;
+  padding: 2%;
+}
+.messages {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  height: 50vh;
+  padding: 20px;
+  margin-bottom: 1%;
+}
+.messages .user-message:last-child,
+.messages .message:last-child {
+  margin-bottom: 0; /* Entfernt den Abstand der letzten Nachricht vom unteren Rand */
+}
+::-webkit-scrollbar {
+  display: none; /* Versteckt die Scrollleiste in Webkit-basierten Browsern */
 }

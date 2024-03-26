@@ -1,5 +1,5 @@
 <div class="content">
-  <div>
+  <mat-card>
     <h1>Chatprogramm</h1>
     <h4>
       User:
@@ -9,10 +9,10 @@
       Gruppe:
       <span id="joined-gruppe"></span>
     </h4>
-  </div>
+  </mat-card>
   <div class="container">
     <div id="chat-name" class="message user-message"></div>
-    <div id="chat-messages">
+    <mat-card id="chat-messages" style="padding-left: 5%" class="messages">
       <span *ngFor="let msg of messages">
         <div *ngIf="msg.sender == user" class="message user-message">
           {{ msg.sender }}: {{ msg.msg }}
@@ -21,8 +21,8 @@
           {{ msg.sender }}: {{ msg.msg }}
         </div>
       </span>
-    </div>
-    <div class="message-input-form">
+    </mat-card>
+    <mat-card class="message-input-form">
       <input
         type="text"
         id="message-input"
@@ -30,20 +30,41 @@
         placeholder="Nachricht eingeben..."
         [(ngModel)]="message"
       />
-      <button (click)="sendMessage()" class="send-button">Senden</button>
-    </div>
+      <button
+        mat-flat-button
+        style="margin-top: 2%"
+        color="primary"
+        (click)="sendMessage()"
+        class="send-button"
+      >
+        Senden
+      </button>
+    </mat-card>
   </div>
-
-  <div class="user-group-form">
-    <mat-form-field>
+  <mat-card
+    style="
+      display: grid;
+      grid-template-rows: auto;
+      height: fit-content;
+      justify-items: center;
+      padding: 4%;
+    "
+  >
+    <mat-form-field style="width: 80%">
       <mat-label>Benutzername</mat-label>
       <input matInput type="text" [(ngModel)]="user" />
     </mat-form-field>
-
-    <mat-form-field>
+    <mat-form-field style="width: 80%">
       <mat-label>Gruppenname</mat-label>
       <input matInput type="text" [(ngModel)]="groupname" />
     </mat-form-field>
-    <button (click)="login()" class="send-button">Login</button>
-  </div>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="login()"
+      style="width: 80%"
+    >
+      Login
+    </button>
+  </mat-card>
 </div>
