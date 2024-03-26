@@ -15,13 +15,12 @@
     </mat-card-content>
   </mat-card>
   <div class="container">
-    <div id="chat-name" class="message user-message"></div>
-    <mat-card id="chat-messages" style="padding-left: 5%" class="messages">
+    <mat-card id="chat-messages" class="messages">
       <span *ngFor="let msg of messages">
         <div *ngIf="msg.sender == user" class="message user-message">
           {{ msg.sender }}: {{ msg.msg }}
         </div>
-        <div *ngIf="msg.sender != user" class="message">
+        <div *ngIf="msg.sender != user" class="message non-user-message">
           {{ msg.sender }}: {{ msg.msg }}
         </div>
       </span>
