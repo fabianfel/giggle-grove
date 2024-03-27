@@ -23,6 +23,13 @@
   padding: 16px; /* Innenabstand */
 }
 
+.message-timestamp {
+  font-size: 12px; /* Schriftgröße */
+  color: #666; /* Graue Textfarbe */
+  margin-right: 0;
+  margin-left: auto; /* Rechtsbündig */
+}
+
 .user-group {
   background-color: #cbe2ff; /* Hintergrundfarbe wie der Primary-Button, aber blasser */
   border-radius: 4px; /* Abrundung der Ecken */
