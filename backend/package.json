@@ -8,7 +8,7 @@
     "start:all": "rm -f server.js && yarn build:all && node server.js",
     "start": "rm -f server.js && yarn build && node server.js",
     "build": "tsc --target es2022 --moduleResolution node server.ts",
-    "build:frontend": "yarn --cwd ../frontend build && cp -Rf ../frontend/dist/browser ./public",
+    "build:frontend": "rm -rf ./public && yarn --cwd ../frontend build && cp -Rf ../frontend/dist/browser ./public",
     "build:all": "yarn build:frontend && yarn build",
     "minify": "modclean -n default:safe,default:caution -r && node-prune"
   },

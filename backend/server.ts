@@ -12,13 +12,8 @@ interface Group {
   conns: Set<SocketStream>;
 }
 
-interface Message {
-  user: string;
-  msg: string;
-  ack: boolean;
-}
-
 interface ConnectionObject {
+  id: string;
   user: string;
   groupname: string;
 }
@@ -74,6 +69,8 @@ server.register(FastifyStatic, {
 const groups: Map<string, Group> = new Map();
 
 const conns: Map<SocketStream, ConnectionObject> = new Map();
+
+const messageQueue: Map<string, any> = new Map();
 
 const disconnect = (conn: SocketStream) => {
   const userInfo = conns.get(conn)!;
@@ -136,7 +133,11 @@ server.register(async (server: FastifyInstance) => {
             conn.socket.send("REQUESTED_SELF_REGISTER");
           }
           break;
-
+        case "ACKNOWLEDGE_MESSAGE":
+          messageQueue.delete(
+            conns.get(conn)!.id + "_" + requestJson.payload.timestamp
+          );
+          break;
         case "CREATE_OR_JOIN_GROUP":
           if (!group) {
             console.log(
@@ -159,7 +160,7 @@ server.register(async (server: FastifyInstance) => {
           group.users.add(user);
           group.conns.add(conn);
 
-          conns.set(conn, { groupname, user });
+          conns.set(conn, { id: uuidv4(), groupname, user });
           groups.set(groupname, group);
 
           response = {
@@ -194,6 +195,13 @@ server.register(async (server: FastifyInstance) => {
 
             group.conns.forEach((conn) => {
               conn.socket.send(JSON.stringify(newMsg));
+              messageQueue.set(
+                conns.get(conn)!.id + "_" + newMsg.payload.timestamp,
+                {
+                  conn,
+                  newMsg,
+                }
+              );
             });
           }
           break;
@@ -203,6 +211,13 @@ server.register(async (server: FastifyInstance) => {
     conn.socket.on("close", () => disconnect(conn));
   });
 });
+
+const queueTimer = setTimeout(() => {
+  messageQueue.forEach((value, _) => {
+    value.conn.socket.send(JSON.stringify(value.newMsg));
+  });
+  queueTimer.refresh();
+}, 5000);
 
 const { BACKEND_HOST, BACKEND_PORT } = process.env;
 
