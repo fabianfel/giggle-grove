@@ -34,38 +34,33 @@
       </div>
     </mat-card>
     <mat-card class="message-input-form">
-      <input
-        type="text"
-        id="message-input"
-        class="message-input"
-        placeholder="Nachricht eingeben..."
-        [(ngModel)]="message"
-      />
-      <button
-        mat-flat-button
-        style="margin-top: 2%; width: 30%"
-        color="primary"
-        (click)="sendMessage()"
-        class="send-button"
+      <mat-form-field
+        style="width: 100%"
+        appearance="outline"
+        subscriptSizing="dynamic"
       >
-        Senden
-      </button>
+        <mat-label>Nachricht</mat-label>
+        <input
+          matInput
+          type="text"
+          id="message-input"
+          [(ngModel)]="message"
+          (keydown.enter)="sendMessage()"
+        />
+        <div matPrefix>
+          <button mat-icon-button color="primary" (click)="sendMessage()">
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
+      </mat-form-field>
     </mat-card>
   </div>
-  <mat-card
-    style="
-      display: grid;
-      grid-template-rows: auto;
-      height: fit-content;
-      justify-items: center;
-      padding: 4%;
-    "
-  >
-    <mat-form-field style="width: 80%">
+  <mat-card class="login-card">
+    <mat-form-field style="width: 100%" appearance="outline">
       <mat-label>Benutzername</mat-label>
       <input matInput type="text" [(ngModel)]="user" />
     </mat-form-field>
-    <mat-form-field style="width: 80%">
+    <mat-form-field style="width: 100%" appearance="outline">
       <mat-label>Gruppenname</mat-label>
       <input matInput type="text" [(ngModel)]="groupname" />
     </mat-form-field>
@@ -73,7 +68,7 @@
       mat-flat-button
       color="primary"
       (click)="login()"
-      style="width: 80%"
+      style="width: 100%"
     >
       Login
     </button>

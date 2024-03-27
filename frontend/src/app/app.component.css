@@ -9,7 +9,6 @@
   min-height: calc(100vh - 240px);
 }
 .chat-program-card {
-  margin-bottom: 20px;
   background-color: #fff; /* Hintergrundfarbe */
   border-radius: 4px; /* Abrundung der Ecken */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Schatten */
@@ -82,8 +81,8 @@
 .messages {
   display: flex;
   flex-direction: column;
-  height: 50vh;
-  padding: 2%;
+  overflow-y: scroll;
+  height: 82vh;
 }
 
 .message {
@@ -97,57 +96,30 @@
 .non-user-message {
   background-color: lightcoral;
   float: left;
+  margin-left: 1%;
 }
 
 .user-message {
   background-color: lightgreen;
   float: right;
+  margin-right: 1%;
 }
 
-.message-input {
-  border: 1px solid #ccc;
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.user-group-form {
-  justify-self: center;
-  grid-template-rows: 10% 10% 5%;
-  margin: auto;
-  padding: 20px;
-  display: grid;
-  width: 80%;
-}
-.user-group-form-input {
-  margin-bottom: 10px;
-  border-radius: 5px;
-  padding: 10px;
-  border: 1px solid #ccc;
-}
 .message-input-form {
-  display: flex;
   align-items: center;
-  padding: 1%;
   width: 100%;
-  z-index: 9999;
-  margin-left: auto;
-  margin-right: auto;
   margin-top: auto;
   padding: 2%;
 }
-.messages {
-  display: flex;
-  flex-direction: column;
-  overflow-y: scroll;
-  height: 50vh;
-  padding: 20px;
-  margin-bottom: 1%;
+
+.login-card {
+  display: grid;
+  grid-template-rows: auto;
+  height: fit-content;
+  justify-items: center;
+  padding: 4%;
 }
-.messages .user-message:last-child,
-.messages .message:last-child {
-  margin-bottom: 0; /* Entfernt den Abstand der letzten Nachricht vom unteren Rand */
-}
+
 ::-webkit-scrollbar {
-  display: none; /* Versteckt die Scrollleiste in Webkit-basierten Browsern */
+  display: none;
 }
