@@ -86,23 +86,27 @@
 }
 
 .message {
-  display: grid; /* Verwende ein Grid-Layout */
-  grid-template-columns: 1fr auto; /* Eine Spalte für die Nachricht und eine für den Zeitstempel */
-  grid-template-rows: auto; /* Automatische Höhe für die Zeilen */
   max-width: 70%;
   padding: 1%;
   border-radius: 5px;
   margin-bottom: 1% !important;
   word-wrap: break-word; /* Zeilenumbruch bei Bedarf */
-  position: relative; /* Position relativ für das Grid-Layout */
 }
 
 .message-timestamp {
   font-size: 12px; /* Schriftgröße */
   color: #666; /* Graue Textfarbe */
-  align-self: flex-end; /* Den Zeitstempel ans untere Ende der Zelle ausrichten */
-  margin: 0; /* Entfernen von Standardabständen */
-  padding: 4px; /* Innenabstand */
+  margin-right: 0;
+  margin-bottom: 0; /* Rechtsbündig */
+  margin-left: auto;
+  margin-top: auto;
+}
+
+.message-grid {
+  display: grid;
+  grid-template-columns: 1fr 0.1fr;
+  grid-template-rows: 1fr 0.2fr;
+  word-break: break-word;
 }
 
 .non-user-message {
