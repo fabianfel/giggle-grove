@@ -172,18 +172,13 @@ server.register(async (server: FastifyInstance) => {
           break;
 
         case "SEND_MESSAGE":
-          const newMsg = requestJson.payload!.msg;
-          console.log("Received message:", requestJson);
+          const newMsg = requestJson;
 
-          if (!requestJson.fromServer) {
+          if (!newMsg.fromServer) {
+            newMsg.fromServer = true;
+
             for (const server of serverlist) {
-              server.send(
-                JSON.stringify({
-                  operation: "SEND_MESSAGE",
-                  fromServer: true,
-                  payload: { groupname, user, msg: newMsg },
-                })
-              );
+              server.send(JSON.stringify(newMsg));
             }
           }
 
@@ -195,13 +190,10 @@ server.register(async (server: FastifyInstance) => {
               newMsg
             );
 
+            newMsg.operation = "NEW_MESSAGE";
+
             group.conns.forEach((conn) => {
-              conn.socket.send(
-                JSON.stringify({
-                  operation: "NEW_MESSAGE",
-                  payload: { user, msg: newMsg },
-                })
-              );
+              conn.socket.send(JSON.stringify(newMsg));
             });
           }
           break;
@@ -214,7 +206,6 @@ server.register(async (server: FastifyInstance) => {
 
 const { BACKEND_HOST, BACKEND_PORT } = process.env;
 
-console.log(process.argv[2]);
 const portInput = process.argv[2];
 const port = portInput ? Number(portInput) : Number(BACKEND_PORT);
 
