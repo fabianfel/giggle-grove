@@ -37,13 +37,23 @@ export class AppComponent implements AfterViewInit {
 
   websocket: WebSocketSubject<{
     operation: string;
-    payload: { groupname: string; user: string; msg?: string };
+    payload: {
+      groupname: string;
+      user: string;
+      msg?: string;
+      timestamp?: number;
+    };
   }> = webSocket(config.websocketUrl); // Setzen Sie die WebSocket-Adresse entsprechend Ihrer Serverkonfiguration
 
   user: string = '';
   groupname: string = '';
   message: string = '';
-  messages: { sender: string; msg: string; groupname: string }[] = [];
+  messages: {
+    sender: string;
+    msg: string;
+    groupname: string;
+    timestamp?: number;
+  }[] = [];
 
   constructor(private elementRef: ElementRef) {
     // subject.subscribe(
@@ -83,6 +93,7 @@ export class AppComponent implements AfterViewInit {
             sender: msg.payload.user,
             msg: msg.payload.msg!,
             groupname: msg.payload.groupname,
+            timestamp: msg.payload.timestamp,
           });
           break;
         case 'GROUP_JOINED':
@@ -124,6 +135,7 @@ export class AppComponent implements AfterViewInit {
         user: this.user,
         groupname: this.groupname,
         msg: messageInput,
+        timestamp: Date.now(),
       },
     };
 

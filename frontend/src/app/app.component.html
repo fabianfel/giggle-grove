@@ -23,12 +23,18 @@
               {{ msg.sender }}
             </div>
             {{ msg.msg }}
+            <div class="message-timestamp">
+              {{ msg.timestamp | date : "HH:mm" }}
+            </div>
           </div>
           <div *ngIf="msg.sender != user" class="message non-user-message">
             <div class="username-message" id="username-message">
               {{ msg.sender }}
             </div>
             {{ msg.msg }}
+            <div class="message-timestamp">
+              {{ msg.timestamp | date : "HH:mm" }}
+            </div>
           </div>
         </div>
       </div>
