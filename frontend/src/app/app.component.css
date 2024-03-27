@@ -23,13 +23,6 @@
   padding: 16px; /* Innenabstand */
 }
 
-.message-timestamp {
-  font-size: 12px; /* Schriftgröße */
-  color: #666; /* Graue Textfarbe */
-  margin-right: 0;
-  margin-left: auto; /* Rechtsbündig */
-}
-
 .user-group {
   background-color: #cbe2ff; /* Hintergrundfarbe wie der Primary-Button, aber blasser */
   border-radius: 4px; /* Abrundung der Ecken */
@@ -93,11 +86,23 @@
 }
 
 .message {
+  display: grid; /* Verwende ein Grid-Layout */
+  grid-template-columns: 1fr auto; /* Eine Spalte für die Nachricht und eine für den Zeitstempel */
+  grid-template-rows: auto; /* Automatische Höhe für die Zeilen */
   max-width: 70%;
   padding: 1%;
   border-radius: 5px;
   margin-bottom: 1% !important;
   word-wrap: break-word; /* Zeilenumbruch bei Bedarf */
+  position: relative; /* Position relativ für das Grid-Layout */
+}
+
+.message-timestamp {
+  font-size: 12px; /* Schriftgröße */
+  color: #666; /* Graue Textfarbe */
+  align-self: flex-end; /* Den Zeitstempel ans untere Ende der Zelle ausrichten */
+  margin: 0; /* Entfernen von Standardabständen */
+  padding: 4px; /* Innenabstand */
 }
 
 .non-user-message {

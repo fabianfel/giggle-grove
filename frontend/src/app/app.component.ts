@@ -38,8 +38,8 @@ export class AppComponent implements AfterViewInit {
   websocket: WebSocketSubject<{
     operation: string;
     payload: {
-      groupname: string;
-      user: string;
+      groupname?: string;
+      user?: string;
       msg?: string;
       timestamp?: number;
     };
@@ -49,9 +49,9 @@ export class AppComponent implements AfterViewInit {
   groupname: string = '';
   message: string = '';
   messages: {
-    sender: string;
-    msg: string;
-    groupname: string;
+    sender?: string;
+    msg?: string;
+    groupname?: string;
     timestamp?: number;
   }[] = [];
 
@@ -94,6 +94,10 @@ export class AppComponent implements AfterViewInit {
             msg: msg.payload.msg!,
             groupname: msg.payload.groupname,
             timestamp: msg.payload.timestamp,
+          });
+          this.websocket.next({
+            operation: 'ACKNOWLEDGE_MESSAGE',
+            payload: { timestamp: msg.payload.timestamp },
           });
           break;
         case 'GROUP_JOINED':
