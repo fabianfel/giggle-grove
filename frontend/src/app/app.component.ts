@@ -35,6 +35,8 @@ export class AppComponent implements AfterViewInit {
   title: string = 'Hello, Angular!';
   value = 'Clear me';
 
+  messageReceived: boolean = false;
+
   websocket: WebSocketSubject<{
     operation: string;
     payload: {

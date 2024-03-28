@@ -108,6 +108,10 @@
   height: fit-content;
 }
 
+.blue-text {
+  color: #1976d2;
+}
+
 .message-grid {
   display: grid;
   grid-template-columns: auto auto;

@@ -26,7 +26,10 @@
               <div class="message-message">{{ msg.msg }}</div>
               <div></div>
               <div></div>
-              <div class="message-timestamp">
+              <div
+                class="message-timestamp"
+                [ngClass]="{ 'blue-text': messageReceived }"
+              >
                 <div>{{ msg.timestamp | date : "HH:mm" }}</div>
                 <mat-icon class="check-icon">check</mat-icon>
               </div>
@@ -42,7 +45,6 @@
               <div></div>
               <div class="message-timestamp">
                 <div>{{ msg.timestamp | date : "HH:mm" }}</div>
-                <mat-icon class="check-icon">check</mat-icon>
               </div>
             </div>
           </div>
