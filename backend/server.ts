@@ -18,6 +18,23 @@ interface ConnectionObject {
   groupname: string;
 }
 
+enum ChatOperations {
+  SEND_MESSAGE = "SEND_MESSAGE",
+  NEW_MESSAGE = "NEW_MESSAGE",
+  ACKNOWLEDGE_MESSAGE = "ACKNOWLEDGE_MESSAGE",
+
+  CREATE_OR_JOIN_GROUP = "CREATE_OR_JOIN_GROUP",
+  NAME_ALREADY_TAKEN_FOR_GROUP = "NAME_ALREADY_TAKEN_FOR_GROUP",
+  GROUP_JOINED = "GROUP_JOINED",
+
+  SERVER_GROUP_JOIN = "SERVER_GROUP_JOIN",
+  SERVER_GROUP_LEFT = "SERVER_GROUP_LEFT",
+
+  SERVER_REGISTER = "SERVER_REGISTER",
+  SERVER_REQUESTED_SELF_REGISTER = "SERVER_REQUESTED_SELF_REGISTER",
+  SERVER_REGISTERED = "SERVER_REGISTERED",
+}
+
 loadEnv();
 
 const serverID = uuidv4();
@@ -37,15 +54,21 @@ for (const host of process.env.DB_HOSTLIST!.split(",")) {
     currSocket.onerror = reconnect;
 
     currSocket.onopen = (_) => {
-      console.log("Connected to:", currSocket.url);
       currSocket.send(
-        JSON.stringify({ operation: "REGISTER_SERVER", payload: { serverID } })
+        JSON.stringify({
+          operation: ChatOperations.SERVER_REGISTER,
+          payload: { serverID },
+        })
       );
       serverlist.add(currSocket);
     };
 
     currSocket.onmessage = (msg) => {
-      if (msg.data === "REQUESTED_SELF_REGISTER") {
+      if (
+        msg.data
+          .toString()
+          .includes(ChatOperations.SERVER_REQUESTED_SELF_REGISTER)
+      ) {
         console.log(
           "Unregistering own server from serverlist:",
           currSocket.url
@@ -54,6 +77,10 @@ for (const host of process.env.DB_HOSTLIST!.split(",")) {
         currSocket.onclose = null;
         currSocket.close();
         serverlist.delete(currSocket);
+      } else if (
+        msg.data.toString().includes(ChatOperations.SERVER_REGISTERED)
+      ) {
+        console.log("Registered server:", currSocket.url);
       }
     };
   }, 1000);
@@ -80,7 +107,14 @@ const disconnect = (conn: SocketStream) => {
     oldGroup!.users.delete(userInfo.user);
     oldGroup!.conns.delete(conn);
     conns.delete(conn);
-
+    serverlist.forEach((socket: WebSocket) => {
+      socket.send(
+        JSON.stringify({
+          operation: ChatOperations.SERVER_GROUP_LEFT,
+          payload: { user: userInfo.user, groupname: userInfo.groupname },
+        })
+      );
+    });
     console.log(
       "User:",
       userInfo.user,
@@ -125,20 +159,36 @@ server.register(async (server: FastifyInstance) => {
       let group = groups.get(groupname);
 
       switch (requestJson.operation) {
-        case "REGISTER_SERVER":
-          console.log("Registering new server");
-          if (requestJson.payload!["serverID"] !== serverID) {
-            conn.socket.send("REGISTERED");
-          } else {
-            conn.socket.send("REQUESTED_SELF_REGISTER");
+        case ChatOperations.SEND_MESSAGE:
+          const newMsg = requestJson;
+
+          if (!newMsg.fromServer) {
+            newMsg.fromServer = true;
+
+            for (const server of serverlist) {
+              server.send(JSON.stringify(newMsg));
+            }
+          }
+
+          if (group) {
+            console.log("New Message received in Group:", groupname);
+
+            newMsg.operation = ChatOperations.NEW_MESSAGE;
+
+            group.conns.forEach((conn) => {
+              conn.socket.send(JSON.stringify(newMsg));
+              messageQueue.set(
+                conns.get(conn)!.id + "_" + newMsg.payload.timestamp,
+                {
+                  conn,
+                  newMsg,
+                }
+              );
+            });
           }
           break;
-        case "ACKNOWLEDGE_MESSAGE":
-          messageQueue.delete(
-            conns.get(conn)!.id + "_" + requestJson.payload.timestamp
-          );
-          break;
-        case "CREATE_OR_JOIN_GROUP":
+
+        case ChatOperations.CREATE_OR_JOIN_GROUP:
           if (!group) {
             console.log(
               "Group:",
@@ -147,9 +197,9 @@ server.register(async (server: FastifyInstance) => {
             );
             group = { users: new Set(), conns: new Set() };
           } else if (group.users.has(user)) {
-            console.log("User: " + user + " is already in group");
+            console.log("User: " + user + " is already in group", groupname);
             response = {
-              operation: "NAME_ALREADY_TAKEN_FOR_GROUP",
+              operation: ChatOperations.NAME_ALREADY_TAKEN_FOR_GROUP,
             };
             conn.socket.send(JSON.stringify(response));
             break;
@@ -163,47 +213,62 @@ server.register(async (server: FastifyInstance) => {
           conns.set(conn, { id: uuidv4(), groupname, user });
           groups.set(groupname, group);
 
-          response = {
-            operation: "GROUP_JOINED",
-          };
+          serverlist.forEach((socket: WebSocket) => {
+            socket.send(
+              JSON.stringify({
+                operation: ChatOperations.SERVER_GROUP_JOIN,
+                payload: {
+                  user,
+                  groupname,
+                },
+              })
+            );
+          });
 
+          conn.socket.send(
+            JSON.stringify({
+              operation: ChatOperations.GROUP_JOINED,
+            })
+          );
           console.log("User", user, "joined group", groupname);
-
-          conn.socket.send(JSON.stringify(response));
+          break;
+        case ChatOperations.SERVER_GROUP_JOIN:
+          if (!group) {
+            console.log(
+              "Group:",
+              groupname,
+              "does not exist locally. Creating"
+            );
+            group = { users: new Set(), conns: new Set() };
+          }
+          group.users.add(user);
           break;
 
-        case "SEND_MESSAGE":
-          const newMsg = requestJson;
-
-          if (!newMsg.fromServer) {
-            newMsg.fromServer = true;
-
-            for (const server of serverlist) {
-              server.send(JSON.stringify(newMsg));
-            }
-          }
-
+        case ChatOperations.SERVER_GROUP_LEFT:
           if (group) {
-            console.log(
-              "New Message received in Group:",
-              groupname,
-              "Msg:",
-              newMsg
-            );
-
-            newMsg.operation = "NEW_MESSAGE";
-
-            group.conns.forEach((conn) => {
-              conn.socket.send(JSON.stringify(newMsg));
-              messageQueue.set(
-                conns.get(conn)!.id + "_" + newMsg.payload.timestamp,
-                {
-                  conn,
-                  newMsg,
-                }
-              );
-            });
+            group.users.delete(user);
           }
+          break;
+        case ChatOperations.ACKNOWLEDGE_MESSAGE:
+          messageQueue.delete(
+            conns.get(conn)!.id + "_" + requestJson.payload.timestamp
+          );
+          break;
+
+        case ChatOperations.SERVER_REGISTER:
+          if (requestJson.payload!["serverID"] == serverID) {
+            conn.socket.send(
+              JSON.stringify({
+                operation: ChatOperations.SERVER_REQUESTED_SELF_REGISTER,
+              })
+            );
+            break;
+          }
+          conn.socket.send(
+            JSON.stringify({
+              operation: ChatOperations.SERVER_REGISTERED,
+            })
+          );
           break;
       }
     });
