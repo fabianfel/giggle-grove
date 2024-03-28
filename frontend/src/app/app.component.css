@@ -100,13 +100,15 @@
   margin-bottom: 0; /* Rechtsbündig */
   margin-left: auto;
   margin-top: auto;
+  min-width: fit-content;
 }
 
 .message-grid {
   display: grid;
-  grid-template-columns: 1fr 0.1fr;
-  grid-template-rows: 1fr 0.2fr;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
   word-break: break-word;
+  gap: 8px;
 }
 
 .non-user-message {
