@@ -161,6 +161,7 @@ server.register(async (server: FastifyInstance) => {
       switch (requestJson.operation) {
         case ChatOperations.SEND_MESSAGE:
           const newMsg = requestJson;
+          console.log("New Message received:", newMsg);
 
           if (!newMsg.fromServer) {
             newMsg.fromServer = true;
@@ -172,7 +173,6 @@ server.register(async (server: FastifyInstance) => {
 
           if (group) {
             console.log("New Message received in Group:", groupname);
-
             newMsg.operation = ChatOperations.NEW_MESSAGE;
 
             group.conns.forEach((conn) => {
@@ -240,6 +240,7 @@ server.register(async (server: FastifyInstance) => {
               "does not exist locally. Creating"
             );
             group = { users: new Set(), conns: new Set() };
+            groups.set(groupname, group);
           }
           group.users.add(user);
           break;
