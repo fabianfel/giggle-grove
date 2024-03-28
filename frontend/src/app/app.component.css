@@ -94,13 +94,18 @@
 }
 
 .message-timestamp {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2.5px;
   font-size: 12px; /* Schriftgröße */
   color: #666; /* Graue Textfarbe */
-  margin-right: 0;
-  margin-bottom: 0; /* Rechtsbündig */
-  margin-left: auto;
-  margin-top: auto;
   min-width: fit-content;
+}
+
+.check-icon {
+  font-size: 100%;
+  width: fit-content;
+  height: fit-content;
 }
 
 .message-grid {
