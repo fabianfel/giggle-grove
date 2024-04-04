@@ -15,6 +15,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 import { config } from '../environments/environment';
+import { SortedLinkedList } from './messageHelper';
+import { timestamp } from 'rxjs';
 
 @Component({
   selector: 'app-component',
@@ -50,12 +52,12 @@ export class AppComponent implements AfterViewInit {
   user: string = '';
   groupname: string = '';
   message: string = '';
-  messages: {
+  messages: SortedLinkedList<{
     sender?: string;
     msg?: string;
     groupname?: string;
-    timestamp?: number;
-  }[] = [];
+    timestamp: number;
+  }> = new SortedLinkedList();
 
   constructor(private elementRef: ElementRef) {
     // subject.subscribe(
@@ -91,11 +93,11 @@ export class AppComponent implements AfterViewInit {
       switch (msg.operation) {
         case 'NEW_MESSAGE':
           console.log('New Message received in Group: ', msg);
-          this.messages.push({
+          this.messages.insert({
             sender: msg.payload.user,
             msg: msg.payload.msg!,
             groupname: msg.payload.groupname,
-            timestamp: msg.payload.timestamp,
+            timestamp: msg.payload.timestamp || 0,
           });
           this.websocket.next({
             operation: 'ACKNOWLEDGE_MESSAGE',
@@ -106,6 +108,7 @@ export class AppComponent implements AfterViewInit {
           document.getElementById('joined-user')!.innerHTML = this.user;
           document.getElementById('joined-gruppe')!.innerHTML = this.groupname;
           break;
+        case 'placeholder':
       }
     });
   }
@@ -127,6 +130,8 @@ export class AppComponent implements AfterViewInit {
     this.websocket.next(message);
   }
 
+  // Nachricht so lange versuchen zu schicken, bis sie erfolgreich versendet wurde
+  // Loading screen solang keine verbindung zum server besteht
   sendMessage() {
     var messageInput = this.message.trim();
 
