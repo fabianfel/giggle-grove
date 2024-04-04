@@ -17,7 +17,7 @@
   <div class="container">
     <mat-card id="chat-messages" class="messages">
       <div class="frame" #scrollframe>
-        <div *ngFor="let msg of messages" class="msg" #msg>
+        <div *ngFor="let msg of messages.getAllData()" class="msg" #msg>
           <div *ngIf="msg.sender == user" class="message user-message">
             <div class="username-message" id="username-message">
               {{ msg.sender }}
