@@ -1,4 +1,4 @@
-FROM node as frontend
+FROM node:21-alpine3.18 as frontend
 
 COPY /frontend/.angular           /frontend/.angular
 COPY /frontend/src                /frontend/src
@@ -6,31 +6,35 @@ COPY /frontend/angular.json       /frontend/angular.json
 COPY /frontend/package.json       /frontend/package.json
 COPY /frontend/tsconfig.app.json  /frontend/tsconfig.app.json
 COPY /frontend/tsconfig.json      /frontend/tsconfig.json
-COPY /frontend/yarn.lock          /frontend/yarn.lock
+# COPY /frontend/node_modules       /frontend/node_modules
+# COPY /frontend/yarn.lock          /frontend/yarn.lock
 
 WORKDIR /frontend
-RUN yarn install
+RUN yarn install --network-timeout 1000000
 RUN yarn build:production
 
 
-FROM node as backend
+FROM node:21-alpine3.18 as backend
 
 COPY /backend/server.ts     /backend/server.ts
 COPY /backend/package.json  /backend/package.json
-COPY /backend/yarn.lock     /backend/yarn.lock
+# COPY /backend/node_modules  /backend/node_modules
+# COPY /backend/yarn.lock     /backend/yarn.lock
 
 WORKDIR /backend
 RUN yarn install
 RUN yarn build
 
 
-FROM node as production
+FROM node:21-alpine3.18 as production
+
+RUN apk update && apk add bash
 
 RUN yarn global add modclean node-prune
 
+COPY /backend/package.json  /package.json
 COPY --from=backend /backend/server.js /server.js
 COPY --from=frontend /frontend/dist/browser /public
-COPY /backend/package.json  /package.json
 
 RUN yarn install --production
 
@@ -44,6 +48,6 @@ COPY --from=production /node_modules /node_modules
 COPY --from=production /public /public
 COPY --from=production /server.js /server.js
 
-EXPOSE 5000
+EXPOSE 6969
 
 CMD ["node","--experimental-detect-module" ,"server.js"]

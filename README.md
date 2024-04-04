@@ -8,7 +8,8 @@ Chatprogramm für verteilte Systeme
   - docker build --tag chat:1.0.0 .
 - Prod
   - Make sure, that your runner is supporting linux/arm64!
-  - docker buildx build --platform "linux/arm64" --output type=local,dest=chat_arm64.tar --tag chat:1.0.0 .
+  - docker buildx build --platform "linux/arm64" --output type=local,dest=chat_arm --tag chat:1.0.0 .
+  - tar -czf chat_arm.tar chat_arm
 
 # Installation
 
