@@ -283,7 +283,7 @@ const queueTimer = setTimeout(() => {
     value.conn.socket.send(JSON.stringify(value.newMsg));
   });
   queueTimer.refresh();
-}, 5000);
+}, 6969);
 
 const { BACKEND_HOST, BACKEND_PORT } = process.env;
 
