@@ -332,10 +332,12 @@ function ackMessage(id: any) {
   }
 
   if (isDone) {
+    const payload = currQueueItem.newMsg.payload;
+    payload.serverID = serverID;
     currQueueItem.conn.socket.send(
       JSON.stringify({
         operation: ChatOperations.placeholder,
-        payload: { serverID, timestamp },
+        payload,
       })
     );
   }
