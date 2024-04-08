@@ -22,6 +22,7 @@ enum ChatOperations {
   SEND_MESSAGE = "SEND_MESSAGE",
   NEW_MESSAGE = "NEW_MESSAGE",
   ACKNOWLEDGE_MESSAGE = "ACKNOWLEDGE_MESSAGE",
+  placeholder = "placeholder",
 
   CREATE_OR_JOIN_GROUP = "CREATE_OR_JOIN_GROUP",
   NAME_ALREADY_TAKEN_FOR_GROUP = "NAME_ALREADY_TAKEN_FOR_GROUP",
@@ -39,14 +40,18 @@ loadEnv();
 
 const serverID = uuidv4();
 
-const serverlist = new Set<WebSocket>();
+const serverlist = new Map<string, WebSocket>();
 
 for (const host of process.env.DB_HOSTLIST!.split(",")) {
   const currentTimer = setTimeout(() => {
     const currSocket = new WebSocket(host + "/socket");
 
     const reconnect = (_: any) => {
-      serverlist.delete(currSocket);
+      serverlist.forEach((socket: WebSocket, key: string) => {
+        if (socket == currSocket) {
+          serverlist.delete(key);
+        }
+      });
       currentTimer.refresh();
     };
 
@@ -60,14 +65,14 @@ for (const host of process.env.DB_HOSTLIST!.split(",")) {
           payload: { serverID },
         })
       );
-      serverlist.add(currSocket);
     };
 
     currSocket.onmessage = (msg) => {
-      if (
-        msg.data
-          .toString()
-          .includes(ChatOperations.SERVER_REQUESTED_SELF_REGISTER)
+      const message = JSON.parse(msg.data.toString());
+      if (message.operation == ChatOperations.placeholder) {
+        ackMessage(serverID + "_" + message.payload.timestamp);
+      } else if (
+        message.operation == ChatOperations.SERVER_REQUESTED_SELF_REGISTER
       ) {
         console.log(
           "Unregistering own server from serverlist:",
@@ -76,10 +81,8 @@ for (const host of process.env.DB_HOSTLIST!.split(",")) {
         clearInterval(currentTimer);
         currSocket.onclose = null;
         currSocket.close();
-        serverlist.delete(currSocket);
-      } else if (
-        msg.data.toString().includes(ChatOperations.SERVER_REGISTERED)
-      ) {
+      } else if ((message.operation = ChatOperations.SERVER_REGISTERED)) {
+        serverlist.set(message.payload.serverID, currSocket);
         console.log("Registered server:", currSocket.url);
       }
     };
@@ -161,15 +164,6 @@ server.register(async (server: FastifyInstance) => {
       switch (requestJson.operation) {
         case ChatOperations.SEND_MESSAGE:
           const newMsg = requestJson;
-          console.log("New Message received:", newMsg);
-
-          if (!newMsg.fromServer) {
-            newMsg.fromServer = true;
-
-            for (const server of serverlist) {
-              server.send(JSON.stringify(newMsg));
-            }
-          }
 
           if (group) {
             console.log("New Message received in Group:", groupname);
@@ -184,6 +178,34 @@ server.register(async (server: FastifyInstance) => {
                   newMsg,
                 }
               );
+            });
+          } else if (newMsg.serverID) {
+            console.log(
+              "Group:",
+              groupname,
+              "does not exist locally. sending acknowledgement to server"
+            );
+            conn.socket.send(
+              JSON.stringify({
+                operation: ChatOperations.placeholder,
+                payload: {
+                  timestamp: newMsg.payload.timestamp,
+                  fromServer: serverID,
+                },
+              })
+            );
+          }
+
+          if (!newMsg.serverID) {
+            newMsg.serverID = serverID;
+
+            serverlist.forEach((value, key) => {
+              messageQueue.set(key + "_" + newMsg.payload.timestamp, {
+                conn,
+                newMsg,
+              });
+
+              value.send(JSON.stringify(newMsg));
             });
           }
           break;
@@ -251,9 +273,7 @@ server.register(async (server: FastifyInstance) => {
           }
           break;
         case ChatOperations.ACKNOWLEDGE_MESSAGE:
-          messageQueue.delete(
-            conns.get(conn)!.id + "_" + requestJson.payload.timestamp
-          );
+          ackMessage(conns.get(conn)!.id + "_" + requestJson.payload.timestamp);
           break;
 
         case ChatOperations.SERVER_REGISTER:
@@ -268,6 +288,7 @@ server.register(async (server: FastifyInstance) => {
           conn.socket.send(
             JSON.stringify({
               operation: ChatOperations.SERVER_REGISTERED,
+              payload: { serverID },
             })
           );
           break;
@@ -296,3 +317,26 @@ server.listen({ host: BACKEND_HOST, port }, (err) => {
     process.exit(1);
   }
 });
+function ackMessage(id: any) {
+  console.log("Acknowledging message:", id);
+
+  const currQueueItem = messageQueue.get(id);
+  messageQueue.delete(id);
+  const timestamp = id.split("_")[1];
+  let isDone = true;
+  for (let queueItem in messageQueue) {
+    if (queueItem[0].endsWith(timestamp)) {
+      isDone = false;
+      break;
+    }
+  }
+
+  if (isDone) {
+    currQueueItem.conn.socket.send(
+      JSON.stringify({
+        operation: ChatOperations.placeholder,
+        payload: { serverID, timestamp },
+      })
+    );
+  }
+}

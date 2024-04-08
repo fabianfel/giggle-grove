@@ -10,7 +10,8 @@
     "build": "tsc --target es2022 --moduleResolution node server.ts",
     "build:frontend": "rm -rf ./public && yarn --cwd ../frontend build && cp -Rf ../frontend/dist/browser ./public",
     "build:all": "yarn build:frontend && yarn build",
-    "minify": "modclean -n default:safe,default:caution -r && node-prune"
+    "minify": "modclean -n default:safe,default:caution -r && node-prune",
+    "install": "yarn --cwd ../frontend install"
   },
   "dependencies": {
     "@fastify/static": "^7.0.1",
