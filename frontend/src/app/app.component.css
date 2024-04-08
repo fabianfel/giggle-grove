@@ -144,8 +144,9 @@
   height: fit-content;
 }
 
-.blue-text {
-  color: #1976d2;
+.message-received {
+  color: #1976d2 !important;
+  font: bold !important;
 }
 
 .message-grid {

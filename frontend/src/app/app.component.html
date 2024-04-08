@@ -1,16 +1,15 @@
 <div class="content">
-  <mat-dialog-content *ngIf="isLoading && login">
+  <mat-dialog-content *ngIf="isLoading">
     <div class="loading-dialog-overlay"></div>
     <div class="loading-dialog">
       <br />
       Verbindung zum Server unterbrochen. <br />
-      Bitte warten die Verbindung wird wiederhe rgestellt!
+      Bitte warten die Verbindung wird wiederhergestellt!
       <div class="loading-spinner"></div>
       <mat-spinner class="loading-spinner"></mat-spinner>
     </div>
   </mat-dialog-content>
 
-  <button (click)="test()">Test</button>
   <mat-card class="chat-program-card">
     <mat-card-title class="chat-program-title">Chatprogramm</mat-card-title>
     <mat-card-content>
@@ -40,10 +39,21 @@
               <div></div>
               <div
                 class="message-timestamp"
-                [ngClass]="{ 'blue-text': messageReceived }"
+                [ngClass]="{ 'message-received': msg.received }"
               >
                 <div>{{ msg.timestamp | date : "HH:mm" }}</div>
-                <mat-icon class="check-icon">check</mat-icon>
+                <div>
+                  <mat-icon
+                    class="check-icon"
+                    [ngClass]="{ 'message-received': msg.received }"
+                    >check</mat-icon
+                  >
+                  <mat-icon
+                    *ngIf="msg.received"
+                    class="check-icon message-received"
+                    >check</mat-icon
+                  >
+                </div>
               </div>
             </div>
           </div>

@@ -18,6 +18,7 @@ import { config } from '../environments/environment';
 import { SortedDoubleLinkedList } from './messageHelper';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-component',
@@ -104,7 +105,6 @@ export class AppComponent implements AfterViewInit {
 
       switch (msg.operation) {
         case 'NEW_MESSAGE':
-          // neuen timestamp zurückgeben
           this.messages.insert({
             sender: msg.payload.user,
             msg: msg.payload.msg!,
@@ -116,8 +116,6 @@ export class AppComponent implements AfterViewInit {
             operation: 'ACKNOWLEDGE_MESSAGE',
             payload: {
               timestamp: msg.payload.timestamp,
-              user: this.user,
-              msg: this.message,
             },
           });
           break;
@@ -138,61 +136,10 @@ export class AppComponent implements AfterViewInit {
               `Message with timestamp ${msg.payload.timestamp} could not be found in the existing messages list and therefore couldn't be acknowledged.`
             );
           }
+        default:
+          throw new Error(`Unknown operation: ${msg.operation}`);
       }
     });
-  }
-
-  test() {
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Benutzer A',
-      msg: 'Nachricht 1',
-      timestamp: 10,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Benutzer B',
-      msg: 'Nachricht 2',
-      timestamp: 10,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Benutzer C',
-      msg: 'Nachricht 3',
-      timestamp: 10,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Test',
-      msg: 'Test',
-      timestamp: 11,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Test',
-      msg: 'Test',
-      timestamp: 15,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Test',
-      msg: 'Test',
-      timestamp: 8,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Test',
-      msg: 'Test',
-      timestamp: 12,
-    });
-    this.messages.insert({
-      groupname: '1',
-      sender: 'Test',
-      msg: 'Test',
-      timestamp: 12,
-    });
-
-    console.log(this.messages.getAllData());
   }
 
   login() {
@@ -212,7 +159,6 @@ export class AppComponent implements AfterViewInit {
     this.websocket.next(message);
   }
 
-  // Nachricht so lange versuchen zu schicken, bis sie erfolgreich versendet wurde
   sendMessage() {
     var messageInput = this.message.trim();
 
