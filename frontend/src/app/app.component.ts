@@ -15,8 +15,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 import { config } from '../environments/environment';
-import { SortedLinkedList } from './messageHelper';
-import { timestamp } from 'rxjs';
+import { SortedDoubleLinkedList } from './messageHelper';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-component',
@@ -30,6 +31,8 @@ import { timestamp } from 'rxjs';
     MatIconModule,
     MatButtonModule,
     MatCardModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
   ],
   styleUrls: ['./app.component.css'],
 })
@@ -46,25 +49,32 @@ export class AppComponent implements AfterViewInit {
       user?: string;
       msg?: string;
       timestamp?: number;
+      received?: boolean;
     };
   }> = webSocket(config.websocketUrl); // Setzen Sie die WebSocket-Adresse entsprechend Ihrer Serverkonfiguration
 
   user: string = '';
   groupname: string = '';
   message: string = '';
-  messages: SortedLinkedList<{
+  messages: SortedDoubleLinkedList<{
     sender?: string;
     msg?: string;
     groupname?: string;
     timestamp: number;
-  }> = new SortedLinkedList();
+    received?: boolean;
+  }> = new SortedDoubleLinkedList();
 
-  constructor(private elementRef: ElementRef) {
-    // subject.subscribe(
-    //   (msg) => console.log('message received: ' + msg), // Called whenever there is a message from the server.
-    //   (err) => console.log(err), // Called if at any point WebSocket API signals some kind of error.
-    //   () => console.log('complete') // Called when connection is closed (for whatever reason).
-    // );
+  isLoading: boolean = false;
+
+  constructor() {
+    this.websocket.subscribe({
+      next: () => {
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = true;
+      },
+    });
   }
 
   @ViewChild('scrollframe', { static: false }) scrollFrame!: ElementRef;
@@ -90,18 +100,25 @@ export class AppComponent implements AfterViewInit {
 
   ngOnInit() {
     this.websocket.subscribe((msg) => {
+      let messageFound;
+
       switch (msg.operation) {
         case 'NEW_MESSAGE':
-          console.log('New Message received in Group: ', msg);
+          // neuen timestamp zurückgeben
           this.messages.insert({
             sender: msg.payload.user,
             msg: msg.payload.msg!,
             groupname: msg.payload.groupname,
             timestamp: msg.payload.timestamp || 0,
+            received: false,
           });
           this.websocket.next({
             operation: 'ACKNOWLEDGE_MESSAGE',
-            payload: { timestamp: msg.payload.timestamp },
+            payload: {
+              timestamp: msg.payload.timestamp,
+              user: this.user,
+              msg: this.message,
+            },
           });
           break;
         case 'GROUP_JOINED':
@@ -109,8 +126,73 @@ export class AppComponent implements AfterViewInit {
           document.getElementById('joined-gruppe')!.innerHTML = this.groupname;
           break;
         case 'placeholder':
+          messageFound = this.messages.setReceivedAttributeByTimestamp(
+            msg.payload.timestamp || 0,
+            msg.payload.user || '',
+            msg.payload.msg || ''
+          );
+          if (messageFound) {
+            break;
+          } else {
+            throw new Error(
+              `Message with timestamp ${msg.payload.timestamp} could not be found in the existing messages list and therefore couldn't be acknowledged.`
+            );
+          }
       }
     });
+  }
+
+  test() {
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Benutzer A',
+      msg: 'Nachricht 1',
+      timestamp: 10,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Benutzer B',
+      msg: 'Nachricht 2',
+      timestamp: 10,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Benutzer C',
+      msg: 'Nachricht 3',
+      timestamp: 10,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Test',
+      msg: 'Test',
+      timestamp: 11,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Test',
+      msg: 'Test',
+      timestamp: 15,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Test',
+      msg: 'Test',
+      timestamp: 8,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Test',
+      msg: 'Test',
+      timestamp: 12,
+    });
+    this.messages.insert({
+      groupname: '1',
+      sender: 'Test',
+      msg: 'Test',
+      timestamp: 12,
+    });
+
+    console.log(this.messages.getAllData());
   }
 
   login() {
@@ -131,7 +213,6 @@ export class AppComponent implements AfterViewInit {
   }
 
   // Nachricht so lange versuchen zu schicken, bis sie erfolgreich versendet wurde
-  // Loading screen solang keine verbindung zum server besteht
   sendMessage() {
     var messageInput = this.message.trim();
 
@@ -147,6 +228,7 @@ export class AppComponent implements AfterViewInit {
         groupname: this.groupname,
         msg: messageInput,
         timestamp: Date.now(),
+        received: false,
       },
     };
 

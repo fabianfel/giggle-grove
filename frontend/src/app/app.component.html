@@ -1,4 +1,16 @@
 <div class="content">
+  <mat-dialog-content *ngIf="isLoading && login">
+    <div class="loading-dialog-overlay"></div>
+    <div class="loading-dialog">
+      <br />
+      Verbindung zum Server unterbrochen. <br />
+      Bitte warten die Verbindung wird wiederhe rgestellt!
+      <div class="loading-spinner"></div>
+      <mat-spinner class="loading-spinner"></mat-spinner>
+    </div>
+  </mat-dialog-content>
+
+  <button (click)="test()">Test</button>
   <mat-card class="chat-program-card">
     <mat-card-title class="chat-program-title">Chatprogramm</mat-card-title>
     <mat-card-content>
