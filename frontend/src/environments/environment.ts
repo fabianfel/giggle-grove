@@ -1,4 +1,4 @@
-const port = 5000;
+const port = 6969;
 
 export const config = {
   production: false,
