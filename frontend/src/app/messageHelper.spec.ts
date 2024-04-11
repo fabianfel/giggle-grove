@@ -1,6 +1,4 @@
 import { SortedDoubleLinkedList, DataWithTimestamp } from './messageHelper';
-import 'zone.js';
-import 'zone.js/testing';
 
 let list: SortedDoubleLinkedList<DataWithTimestamp>;
 
