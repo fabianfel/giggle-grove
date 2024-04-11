@@ -1,4 +1,4 @@
-interface DataWithTimestamp {
+export interface DataWithTimestamp {
   timestamp: number;
   groupname?: string;
   sender?: string;

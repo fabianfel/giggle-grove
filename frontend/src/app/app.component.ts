@@ -78,6 +78,8 @@ export class AppComponent implements AfterViewInit {
     });
   }
 
+  // Start of code for the scrollable chat window
+
   @ViewChild('scrollframe', { static: false }) scrollFrame!: ElementRef;
   @ViewChildren('msg') msgElements!: QueryList<any>;
 
@@ -99,6 +101,16 @@ export class AppComponent implements AfterViewInit {
     });
   }
 
+  // End of code for the scrollable chat window
+
+  /**
+   * Initializes the component and subscribes to the websocket messages.
+   * The following operations are supported:
+   * - NEW_MESSAGE: Inserts a new message into the messages list. And sends an ACKNOWLEDGE_MESSAGE message to the server.
+   * - GROUP_JOINED: Displays the user and groupname in the chat window.
+   * - placeholder: Sets the received attribute of a message to true.
+   * @throws Error if the operation is unknown or if a message with a specific timestamp could not be found.
+   */
   ngOnInit() {
     this.websocket.subscribe((msg) => {
       let messageFound;
@@ -142,6 +154,10 @@ export class AppComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Logs in the user and sends a WebSocket message to create or join a group.
+   * Displays an alert if any required fields are empty.
+   */
   login() {
     if (this.user === '' || this.groupname === '') {
       alert('Bitte füllen Sie alle Felder aus.');
@@ -159,6 +175,9 @@ export class AppComponent implements AfterViewInit {
     this.websocket.next(message);
   }
 
+  /**
+   * Sends a message to the server. Displays an alert if any required fields are empty.
+   */
   sendMessage() {
     var messageInput = this.message.trim();
 
