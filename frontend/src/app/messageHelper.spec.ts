@@ -1,5 +1,4 @@
-import { SortedDoubleLinkedList, DataWithTimestamp } from './messageHelper';
-
+import { DataWithTimestamp, SortedDoubleLinkedList } from './messageHelper';
 let list: SortedDoubleLinkedList<DataWithTimestamp>;
 
 beforeEach(() => {

@@ -2,14 +2,11 @@
 
 Chatprogramm für verteilte Systeme
 
-# Docker Build
+# Docker Builddo
 
 - Dev
-  - docker build --tag chat:1.0.0 .
-- Prod
-  - Make sure, that your runner is supporting linux/arm64!
-  - docker buildx build --platform "linux/arm64" --output type=local,dest=chat_arm --tag chat:1.0.0 .
-  - tar -czf chat_arm.tar chat_arm
+  - docker build --tag giggle-grove:1.0 .
+  - docker run -d -p 6969:6969 giggle-grove:1.0
 
 # Installation
 
