@@ -55,6 +55,10 @@ export class AppComponent implements AfterViewInit {
     this.initializeWebSocketListener();
   }
 
+  /**
+   * Initializes the WebSocket listener.
+   * Subscribes to the WebSocket service and handles incoming messages.
+   */
   private initializeWebSocketListener(): void {
     this.websocketService.subscribe(
       (msg: WebSocketMessage) => {
@@ -66,6 +70,11 @@ export class AppComponent implements AfterViewInit {
     );
   }
 
+  /**
+   * Handles incoming WebSocket messages.
+   *
+   * @param msg - The WebSocket message to handle.
+   */
   handleWebSocketMessage(msg: WebSocketMessage): void {
     switch (msg.operation) {
       case 'NEW_MESSAGE':
@@ -133,43 +142,6 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  // Start of code for the scrollable chat window
-
-  @ViewChild('scrollframe', { static: false }) scrollFrame!: ElementRef;
-  @ViewChildren('msg') msgElements!: QueryList<any>;
-
-  private shouldScrollToBottom: boolean = true;
-
-  ngAfterViewInit() {
-    this.msgElements.changes.subscribe((_) => {
-      if (this.shouldScrollToBottom) {
-        this.scrollToBottom();
-      }
-    });
-  }
-
-  private scrollToBottom(): void {
-    this.scrollFrame.nativeElement.scroll({
-      top: this.scrollFrame.nativeElement.scrollHeight,
-      left: 0,
-      behavior: 'smooth',
-    });
-  }
-
-  // End of code for the scrollable chat window
-
-  /**
-   * Initializes the component and subscribes to the websocket messages.
-   * The following operations are supported:
-   * - NEW_MESSAGE: Inserts a new message into the messages list. And sends an ACKNOWLEDGE_MESSAGE message to the server.
-   * - GROUP_JOINED: Displays the user and groupname in the chat window.
-   * - placeholder: Sets the received attribute of a message to true.
-   * @throws Error if the operation is unknown or if a message with a specific timestamp could not be found.
-   */
-  ngOnInit() {
-    // No need to subscribe to WebSocket here since it's already subscribed in the constructor
-  }
-
   /**
    * Logs in the user and sends a WebSocket message to create or join a group.
    * Displays an alert if any required fields are empty.
@@ -217,4 +189,29 @@ export class AppComponent implements AfterViewInit {
 
     this.websocketService.next(message);
   }
+
+  // Start of code for the scrollable chat window
+
+  @ViewChild('scrollframe', { static: false }) scrollFrame!: ElementRef;
+  @ViewChildren('msg') msgElements!: QueryList<any>;
+
+  private shouldScrollToBottom: boolean = true;
+
+  ngAfterViewInit() {
+    this.msgElements.changes.subscribe((_) => {
+      if (this.shouldScrollToBottom) {
+        this.scrollToBottom();
+      }
+    });
+  }
+
+  private scrollToBottom(): void {
+    this.scrollFrame.nativeElement.scroll({
+      top: this.scrollFrame.nativeElement.scrollHeight,
+      left: 0,
+      behavior: 'smooth',
+    });
+  }
+
+  // End of code for the scrollable chat window
 }

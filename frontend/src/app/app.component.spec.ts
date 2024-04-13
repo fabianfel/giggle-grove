@@ -2,6 +2,7 @@ import {
   ComponentFixture,
   TestBed,
   fakeAsync,
+  flush,
   tick,
 } from '@angular/core/testing';
 import { AppComponent } from './app.component';
@@ -9,26 +10,28 @@ import { WebSocketService } from '../helperClasses/WebSocketService';
 import { of } from 'rxjs';
 import { WebSocketMessage } from '../helperClasses/WebSocketMessage';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MockWebSocketService } from '../helperClasses/MockWebSocketService';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
-  let websocketServiceSpy: jasmine.SpyObj<WebSocketService>;
+  let service: WebSocketService;
+  let mockWebSocketService: MockWebSocketService;
 
-  beforeEach(async () => {
-    // Erstelle ein Spy-Objekt für den WebSocketService
-    const spy = jasmine.createSpyObj('WebSocketService', ['subscribe', 'next']);
-
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule],
-      providers: [{ provide: WebSocketService, useValue: spy }],
-    }).compileComponents();
-
+      providers: [
+        { provide: WebSocketService, useClass: MockWebSocketService },
+      ],
+    });
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
-    websocketServiceSpy = TestBed.inject(
+
+    service = TestBed.inject(WebSocketService);
+    mockWebSocketService = TestBed.inject(
       WebSocketService
-    ) as jasmine.SpyObj<WebSocketService>;
+    ) as MockWebSocketService;
   });
 
   it('should create component', () => {
@@ -119,6 +122,17 @@ describe('AppComponent', () => {
     expect(component.messageConfirmation).toHaveBeenCalledWith(msg);
   });
 
+  it('should throw error while handling placeholder operation', () => {
+    const msg: WebSocketMessage = {
+      operation: 'placeholder',
+      payload: { timestamp: 123456789, user: 'testUser', msg: 'Test message' },
+    };
+
+    expect(() => component.messageConfirmation(msg)).toThrowError(
+      "Message with timestamp 123456789 could not be found in the existing messages list and therefore couldn't be acknowledged."
+    );
+  });
+
   it('should throw an error for unknown operation', () => {
     const msg: WebSocketMessage = {
       operation: 'unknownOperation',
@@ -129,4 +143,56 @@ describe('AppComponent', () => {
       'Unknown operation: unknownOperation'
     );
   });
+
+  it('should send SEND_MESSAGE to WebSocketService', fakeAsync(() => {
+    // Arrange
+    const message: WebSocketMessage = {
+      operation: 'SEND_MESSAGE',
+      payload: {
+        user: 'testUser',
+        groupname: 'testGroup',
+        msg: 'testMessage',
+        timestamp: 0,
+        received: false,
+      },
+    };
+    let receivedMessage: WebSocketMessage | undefined;
+
+    mockWebSocketService.subscribe((msg: WebSocketMessage) => {
+      receivedMessage = msg;
+    });
+
+    component.sendMessage();
+
+    service.next(message);
+    tick();
+
+    expect(receivedMessage).toEqual(message);
+  }));
+
+  it('should send CREATE_OR_JOIN_GROUP to WebSocketService', fakeAsync(() => {
+    // Arrange
+    const message: WebSocketMessage = {
+      operation: 'CREATE_OR_JOIN_GROUP',
+      payload: {
+        user: 'testUser',
+        groupname: 'testGroup',
+        msg: 'testMessage',
+        timestamp: 0,
+        received: false,
+      },
+    };
+    let receivedMessage: WebSocketMessage | undefined;
+
+    mockWebSocketService.subscribe((msg: WebSocketMessage) => {
+      receivedMessage = msg;
+    });
+
+    component.login();
+
+    service.next(message);
+    tick();
+
+    expect(receivedMessage).toEqual(message);
+  }));
 });
