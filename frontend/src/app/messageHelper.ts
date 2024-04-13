@@ -82,6 +82,11 @@ export class SortedDoubleLinkedList<T extends DataWithTimestamp> {
     return result;
   }
 
+  clear(): void {
+    this.head = null;
+    this.tail = null;
+  }
+
   setReceivedAttributeByTimestamp(
     timestamp: number,
     sender: string,
