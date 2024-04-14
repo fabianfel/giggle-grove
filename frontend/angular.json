@@ -22,7 +22,10 @@
             "styles": [
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.css"
-            ]
+            ],
+            "outputHashing": "none",
+            "aot": true,
+            "extractLicenses": false
           },
           "configurations": {
             "production": {
@@ -38,15 +41,12 @@
                   "maximumError": "4kb"
                 }
               ],
-              "aot": true,
-              "outputHashing": "none"
+              "sourceMap": false,
+              "optimization": true
             },
             "development": {
-              "optimization": false,
-              "extractLicenses": false,
               "sourceMap": true,
-              "outputHashing": "none",
-              "aot": true
+              "optimization": false
             }
           },
           "defaultConfiguration": "development"
@@ -75,9 +75,7 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "karmaConfig": "karma.conf.js"
           }
         }

@@ -1,4 +1,4 @@
-FROM node:21-alpine3.18 as frontend
+FROM node:21-alpine3.18 as builder
 
 COPY /frontend/src                /frontend/src
 COPY /frontend/angular.json       /frontend/angular.json
@@ -6,43 +6,41 @@ COPY /frontend/package.json       /frontend/package.json
 COPY /frontend/tsconfig.app.json  /frontend/tsconfig.app.json
 COPY /frontend/tsconfig.json      /frontend/tsconfig.json
 
-WORKDIR /frontend
-RUN yarn install --network-timeout 1000000
-RUN yarn build:production
-
-
-FROM node:21-alpine3.18 as backend
-
-COPY /backend/server.ts     /backend/server.ts
-COPY /backend/package.json  /backend/package.json
+COPY /backend/src                 /backend/src
+COPY /backend/package.json        /backend/package.json
+COPY /backend/tsconfig.json       /backend/tsconfig.json
+COPY /backend/webpack.config.js   /backend/webpack.config.js
 
 WORKDIR /backend
 RUN yarn install
-RUN yarn build
+RUN yarn build:all
+
+WORKDIR /final
+RUN mv /backend/public ./public
+RUN mv /backend/dist/backend.js ./backend.js
+
+# Clean up
+RUN rm -rf /frontend /backend
 
 
-FROM node:21-alpine3.18 as production
+FROM alpine:3.18
 
-RUN apk update && apk add bash
+# Create app directory
+WORKDIR /usr/src/app
 
-RUN yarn global add modclean node-prune
+# Add required binaries
+RUN apk add --no-cache libstdc++ dumb-init \
+  && addgroup -g 1000 node && adduser -u 1000 -G node -s /bin/sh -D node \
+  && chown node:node ./
+COPY --from=builder /usr/local/bin/node /usr/local/bin/
+COPY --from=builder /usr/local/bin/docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
+USER node
 
-COPY /backend/package.json  /package.json
-COPY --from=backend /backend/server.js /server.js
-COPY --from=frontend /frontend/dist/browser /public
-
-RUN yarn install --production
-
-RUN modclean -n default:safe,default:caution -r && node-prune
-
-
-FROM node:21-alpine3.18 as final
-
-COPY /backend/prod.env /.env
-COPY --from=production /node_modules /node_modules
-COPY --from=production /public /public
-COPY --from=production /server.js /server.js
+COPY /backend/prod.env ./.env
+COPY --from=builder /final/public ./public
+COPY --from=builder /final/backend.js ./backend.js
 
 EXPOSE 6969
 
-CMD ["node","--experimental-detect-module" ,"server.js"]
+CMD ["dumb-init", "node", "--experimental-detect-module" ,"backend.js"]

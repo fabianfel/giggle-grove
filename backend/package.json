@@ -5,12 +5,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start:all": "rm -f server.js && yarn build:all && node server.js",
-    "start": "rm -f server.js && yarn build && node server.js",
-    "build": "tsc --target es2022 --moduleResolution node server.ts",
-    "build:frontend": "rm -rf ./public && yarn --cwd ../frontend build && cp -Rf ../frontend/dist/browser ./public",
-    "build:all": "yarn build:frontend && yarn build",
-    "minify": "modclean -n default:safe,default:caution -r && node-prune"
+    "start:all": "yarn build:frontend && yarn start",
+    "start": "yarn build && node ./dist/backend.js",
+    "build": "rm -rf ./dist && tsc && webpack",
+    "build:frontend": "yarn --cwd ../frontend install --network-timeout 1000000 && yarn --cwd ../frontend build && rm -rf ./public && cp -Rf ../frontend/dist/browser ./public",
+    "build:all": "yarn build:frontend && yarn build"
   },
   "dependencies": {
     "@fastify/static": "^7.0.1",
@@ -25,6 +24,9 @@
     "@types/ws": "^8.5.10",
     "modclean": "^3.0.0-beta.1",
     "node-prune": "^1.0.2",
-    "typescript": "^5.4.2"
+    "terser-webpack-plugin": "^5.3.10",
+    "typescript": "^5.4.2",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
   }
 }
