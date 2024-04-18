@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start:all": "yarn build:frontend && yarn start",
-    "start": "yarn build && node ./dist/backend.js | pino-pretty",
+    "start": "yarn build && node ./dist/backend.js",
     "build": "rm -rf ./dist && tsc && webpack",
     "build:frontend": "yarn --cwd ../frontend install --network-timeout 1000000 && yarn --cwd ../frontend build && rm -rf ./public && cp -Rf ../frontend/dist/browser ./public",
     "build:all": "yarn build:frontend && yarn build",

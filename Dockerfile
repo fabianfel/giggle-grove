@@ -7,11 +7,13 @@ COPY /frontend/angular.json       /frontend/angular.json
 COPY /frontend/package.json       /frontend/package.json
 COPY /frontend/tsconfig.app.json  /frontend/tsconfig.app.json
 COPY /frontend/tsconfig.json      /frontend/tsconfig.json
+COPY /frontend/yarn.lock          /frontend/yarn.lock
 
 COPY /backend/src                 /backend/src
 COPY /backend/package.json        /backend/package.json
 COPY /backend/tsconfig.json       /backend/tsconfig.json
 COPY /backend/webpack.config.js   /backend/webpack.config.js
+COPY /backend/yarn.lock          /backend/yarn.lock
 
 WORKDIR /backend
 RUN yarn install
