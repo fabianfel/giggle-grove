@@ -1,4 +1,6 @@
-FROM node:20 as builder
+FROM node:20-alpine3.18 as builder
+
+RUN apk add --no-cache python3 make
 
 COPY /frontend/src                /frontend/src
 COPY /frontend/angular.json       /frontend/angular.json
