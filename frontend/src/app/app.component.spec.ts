@@ -2,15 +2,13 @@ import {
   ComponentFixture,
   TestBed,
   fakeAsync,
-  flush,
   tick,
 } from '@angular/core/testing';
-import { AppComponent } from './app.component';
-import { WebSocketService } from '../helperClasses/WebSocketService';
-import { of } from 'rxjs';
-import { WebSocketMessage } from '../helperClasses/WebSocketMessage';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MockWebSocketService } from '../helperClasses/MockWebSocketService';
+import { WebSocketMessage } from '../helperClasses/WebSocketMessage';
+import { WebSocketService } from '../helperClasses/WebSocketService';
+import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;

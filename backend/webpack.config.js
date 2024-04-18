@@ -8,6 +8,12 @@ module.exports = {
   target: "node",
   optimization: {
     minimize: true,
+    mangleWasmImports: true,
     minimizer: [new TerserPlugin()],
+    concatenateModules: true,
+    mangleExports: "size",
+    moduleIds: "size",
+    removeAvailableModules: true,
   },
+  mode: "production",
 };

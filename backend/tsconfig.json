@@ -4,9 +4,8 @@
     "outDir": "./dist",
     "target": "es2022",
     "removeComments": true,
-    "preserveConstEnums": false,
     "sourceMap": false
   },
   "include": ["src/**/*"],
-  "exclude": ["test/**/*.spec.ts"]
+  "exclude": ["spec/**/*.spec.ts"]
 }
