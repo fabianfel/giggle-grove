@@ -1,13 +1,13 @@
+import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
-  AfterViewInit,
+  QueryList,
   ViewChild,
   ViewChildren,
-  QueryList,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -15,9 +15,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { WebSocketMessage } from '../helperClasses/WebSocketMessage';
 import { WebSocketService } from '../helperClasses/WebSocketService';
 import { SortedDoubleLinkedList } from './messageHelper';
-import { WebSocketMessage } from '../helperClasses/WebSocketMessage';
 
 @Component({
   selector: 'app-component',
@@ -188,6 +188,7 @@ export class AppComponent implements AfterViewInit {
     };
 
     this.websocketService.next(message);
+    this.message = '';
   }
 
   // Start of code for the scrollable chat window
