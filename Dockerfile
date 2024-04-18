@@ -1,4 +1,4 @@
-FROM node:21-alpine3.18 as builder
+FROM node:20 as builder
 
 COPY /frontend/src                /frontend/src
 COPY /frontend/angular.json       /frontend/angular.json
