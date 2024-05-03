@@ -17,5 +17,5 @@ jobs:
         uses: docker/build-push-action@v5.3.0
         with:
           push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/public:giggle-grove
