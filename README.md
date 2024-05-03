@@ -2,22 +2,60 @@
 
 Chatprogramm für verteilte Systeme
 
-# Installation
+# Installation auf Raspberry PI
 
-- backend: cd backend && yarn install
-- frontend: cd frontend && yarn install
+```bash
+# Löschen aller vorherigen Images
+docker rmi $(docker images 'giggle-grove' -a -q)
 
-# Start
+# Ausführen des Docker Containers im detached Mode
+# Bei diesem Container darf der Port nicht geändert werden, da sonst die interne Produktionskonfiguration nicht weiter funktioniert 
+docker run -p 0.0.0.0:6969:6969 -d fabianfel/public:giggle-grove
+```
 
-1. backend: cd backend && yarn start
-2. frontend: cd frontend && yarn start
+# Lokales Setup
+## Backend
+```bash
+# Zu Backend navigieren
+cd backend
 
-# Stop
+# Installation der Dependencies
+yarn install
 
-1. backend: commando line interrupt (CTRL + C)
-2. frontend: commando line interrupt (CTRL + C)
+# Für den Start des Backends (Anwendung wird Standardmäßig unter Port 6969 gestartet)
+yarn start
 
-# Test
+# Optional können Sie auch einen anderen Port zum Start angeben (<PORT> Placeholder durch Port ersetzen) (Standardmäßig werden Port 6969, 6970 und 6971 unterstützt für das lokale Setup)
+yarn start <PORT>
 
-frontend: cd frontend && yarn test
-view coverage: cd frontend\coverage\index.html
+# Falls Sie das Backend gemeinsam mit dem Frontend kompilieren und ausführen wollen
+yarn start:all
+```
+## Frontend
+```bash
+# Zu Frontend navigieren
+cd frontend
+
+# Installation der Dependencies
+yarn install
+
+# Start des Frontends (Anwendung wird unter Port 4200 gestartet)
+yarn start
+```
+
+# Stoppen der Anwendungen
+## Backend
+command line interrupt (CTRL + C)
+## Frontend
+command line interrupt (CTRL + C)
+
+# Testing
+## Frontend
+```bash
+# Zu Frontend navigieren
+cd frontend
+
+# Starten der Frontend-Tests
+yarn test
+```
+Coverage wird abgelegt unter: frontend\coverage\index.html
