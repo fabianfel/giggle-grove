@@ -2,12 +2,6 @@
 
 Chatprogramm für verteilte Systeme
 
-# Docker Builddo
-
-- Dev
-  - docker build --tag giggle-grove:1.0 .
-  - docker run -d -p 6969:6969 giggle-grove:1.0
-
 # Installation
 
 - backend: cd backend && yarn install
@@ -25,4 +19,5 @@ Chatprogramm für verteilte Systeme
 
 # Test
 
-2. frontend: cd frontend && yarn test
+frontend: cd frontend && yarn test
+view coverage: cd frontend\coverage\index.html
