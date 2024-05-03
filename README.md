@@ -10,10 +10,19 @@ Chatprogramm für verteilte Systeme
 
 # Installation
 
-- cd backend && yarn install
-- pip install websocket-client
+- backend: cd backend && yarn install
+- frontend: cd frontend && yarn install
 
 # Start
 
-1. cd backend && yarn start
-2. cd socket-chat && python.exe client.py
+1. backend: cd backend && yarn start
+2. frontend: cd frontend && yarn start
+
+# Stop
+
+1. backend: commando line interrupt (CTRL + C)
+2. frontend: commando line interrupt (CTRL + C)
+
+# Test
+
+2. frontend: cd frontend && yarn test
